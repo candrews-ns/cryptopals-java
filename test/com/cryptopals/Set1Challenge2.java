@@ -10,11 +10,8 @@ public class Set1Challenge2 {
         String left  = "1c0111001f010100061a024b53535009181c";
         String right = "686974207468652062756c6c277320657965";
 
-        String output = Encoding.encodeHex(XorCipher.xorBuffers(
-                Encoding.decodeHex(left),
-                Encoding.decodeHex(right)
-        ));
-        assertEquals("746865206b696420646f6e277420706c6179", output);
+        CryptoBuffer output = CryptoBuffer.fromHex(left).xorWith(CryptoBuffer.fromHex(right));
+        assertEquals("746865206b696420646f6e277420706c6179", output.toHex());
     }
 
 }

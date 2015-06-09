@@ -13,13 +13,13 @@ public class Set1Challenge3 {
     @Test
     public void decryptXorCipher() throws Exception {
 
-        byte[] ciphertext = Encoding.decodeHex("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736");
+        CryptoBuffer ciphertext = CryptoBuffer.fromHex("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736");
 
         HashMap<Character, String> decrypts = new HashMap<Character, String>();
         HashMap<Character, Double> scores = new HashMap<Character, Double>();
 
         for (Character c = 0; c < 256; c++) {
-            String decrypt = new String(XorCipher.xorCharacter(ciphertext, c));
+            String decrypt = XorCipher.xorCharacter(ciphertext, c).toString();
             decrypts.put(c, decrypt);
             scores.put(c, Metrics.freqScore(Metrics.characterFreqs(decrypt)));
         }

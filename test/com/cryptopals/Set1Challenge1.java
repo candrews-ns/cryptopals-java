@@ -10,13 +10,13 @@ public class Set1Challenge1 {
 
     @Test
     public void testDecodeBase64() {
-        String hex = Encoding.encodeHex(Encoding.decodeBase64(the_base64));
+        String hex = CryptoBuffer.fromBase64(the_base64).toHex();
         assertEquals(hex, the_hex);
     }
 
     @Test
     public void testEncodeBase64() throws Exception {
-        String base64 = Encoding.encodeBase64(Encoding.decodeHex(the_hex));
+        String base64 = CryptoBuffer.fromHex(the_hex).toBase64();
         assertEquals(base64, the_base64);
     }
 }
