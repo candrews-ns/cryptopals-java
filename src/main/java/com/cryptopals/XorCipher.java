@@ -12,4 +12,11 @@ public class XorCipher {
             output[i] = (byte) (b ^ right[i++]);
         return output;
     }
+
+    public static byte[] xorCharacter(byte[] buf, Character c) {
+        byte[] chars = new byte[buf.length];
+        for (int i = 0; i < buf.length; i++)
+            chars[i] = ((byte) c.charValue());
+        return xorBuffers(buf, chars);
+    }
 }
