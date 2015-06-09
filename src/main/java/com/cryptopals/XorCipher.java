@@ -11,4 +11,12 @@ public class XorCipher {
             chars[i] = ((byte) c.charValue());
         return buffer.xorWith(new CryptoBuffer(chars));
     }
+
+    public static CryptoBuffer xorString(CryptoBuffer buffer, String str) {
+        int repeats = (int)Math.ceil(buffer.length() / (double)str.length());
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < repeats; i++)
+            s.append(str);
+        return buffer.xorWith(new CryptoBuffer(s.toString()));
+    }
 }

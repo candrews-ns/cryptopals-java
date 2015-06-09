@@ -13,6 +13,10 @@ public class CryptoBuffer {
         this.buf = buf;
     }
 
+    public CryptoBuffer(String s) {
+        this.buf = s.getBytes();
+    }
+
     public int length() {
         return this.buf.length;
     }
