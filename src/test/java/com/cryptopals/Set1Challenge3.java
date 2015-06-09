@@ -1,9 +1,12 @@
 package com.cryptopals;
 
+import com.cryptopals.CryptoBuffer;
+import com.cryptopals.Metrics;
+import com.cryptopals.XorCipher;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
-import java.util.*;
-import java.util.stream.Stream;
+import java.util.HashMap;
 
 /**
  * Created by candrews on 05/06/15.
@@ -34,7 +37,7 @@ public class Set1Challenge3 {
             }
         }
 
-        System.out.println("The decrypt with character '" + maxChar + "':");
-        System.out.println(decrypts.get(maxChar));
+        assertEquals(new Character('X'), maxChar);
+        assertEquals("Cooking MC's like a pound of bacon", decrypts.get(maxChar));
     }
 }

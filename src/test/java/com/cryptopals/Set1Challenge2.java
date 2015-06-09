@@ -1,5 +1,6 @@
 package com.cryptopals;
 
+import com.cryptopals.CryptoBuffer;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
