@@ -16,17 +16,7 @@ public class Set1Challenge4 {
 
     @Test
     public void findXor() throws Exception {
-        InputStream in = this.getClass().getResourceAsStream("set1challenge4.txt");
-        if (in == null)
-            fail("no stream");
-
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
-        String line;
-        ArrayList<String> lines = new ArrayList<String>();
-
-        while ((line = bufferedReader.readLine()) != null) {
-            lines.add(line);
-        }
+        ArrayList<String> lines = Utils.readFromClasspath("set1challenge4.txt");
 
         HashMap<String, String> ciphertexts = new HashMap<String, String>();
         HashMap<String, Character> keys = new HashMap<String, Character>();
