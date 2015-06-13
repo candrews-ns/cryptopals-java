@@ -17,6 +17,6 @@ public class Set1Challenge7 {
         CryptoBuffer ciphertext = CryptoBuffer.fromBase64(Utils.readFromClasspath("set1challenge7.txt"));
         CryptoBuffer key = new CryptoBuffer("YELLOW SUBMARINE");
         CryptoBuffer plaintext = ciphertext.decryptAesEcb(key);
-        System.out.println(plaintext);
+        //System.out.println(plaintext);
     }
 }
