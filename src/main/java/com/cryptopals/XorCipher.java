@@ -1,5 +1,9 @@
 package com.cryptopals;
 
+import java.util.AbstractMap;
+import java.util.Map;
+import java.util.TreeSet;
+
 /**
  * Created by candrews on 04/06/15.
  */
@@ -18,5 +22,15 @@ public class XorCipher {
         for (int i = 0; i < repeats; i++)
             s.append(str);
         return buffer.xorWith(new CryptoBuffer(s.toString()));
+    }
+
+    public static char findXorKey(CryptoBuffer ciphertext) {
+        TreeSet<Map.Entry<Character, Double>> scores = new TreeSet<>(new Utils.ScoreComparator<Double>());
+        for (Character c = 0; c < 256; c++) {
+            String plaintext = xorCharacter(ciphertext, c).toString();
+            double score = Metrics.freqScore(Metrics.characterFreqs(plaintext));
+            scores.add(new AbstractMap.SimpleImmutableEntry<>(c, score));
+        }
+        return scores.first().getKey();
     }
 }

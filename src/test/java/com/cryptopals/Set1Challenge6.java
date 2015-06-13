@@ -52,20 +52,13 @@ public class Set1Challenge6 {
         }
 
         int keysize = keysizes.first().getKey();
-        System.out.println("keysize: " + keysize);
+        assertEquals(29, keysize);
 
         ArrayList<CryptoBuffer> blocks = ciphertext.transpose(keysize);
         ArrayList<Character> chars = new ArrayList<>(blocks.size());
 
         for (CryptoBuffer block : blocks) {
-            TreeSet<Map.Entry<Character, Double>> scores = new TreeSet<>(new Utils.ScoreComparator<Double>());
-
-            for (Character c = 0; c < 256; c++) {
-                String plaintext = XorCipher.xorCharacter(block, c).toString();
-                double score = Metrics.freqScore(Metrics.characterFreqs(plaintext));
-                scores.add(new AbstractMap.SimpleImmutableEntry<>(c, score));
-            }
-            chars.add(scores.first().getKey());
+            chars.add(XorCipher.findXorKey(block));
         }
 
         StringBuilder key = new StringBuilder();
