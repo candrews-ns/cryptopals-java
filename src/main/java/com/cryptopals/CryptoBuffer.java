@@ -111,4 +111,17 @@ public class CryptoBuffer {
         }
         return plaintext;
     }
+
+    public CryptoBuffer pkcs7padTo(int padLength) {
+        int bufLength = this.buf.length;
+        int pad = padLength - bufLength;
+        byte[] padded = new byte[padLength];
+        for (int i = 0; i < padLength; i++) {
+            if (i < bufLength)
+                padded[i] = this.buf[i];
+            else
+                padded[i] = (byte)pad;
+        }
+        return new CryptoBuffer(padded);
+    }
 }
