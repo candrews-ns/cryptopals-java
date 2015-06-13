@@ -16,7 +16,7 @@ public class Set1Challenge4 {
 
     @Test
     public void findXor() throws Exception {
-        ArrayList<String> lines = Utils.readFromClasspath("set1challenge4.txt");
+        ArrayList<String> lines = Utils.readLinesFromClasspath("set1challenge4.txt");
 
         TreeSet<Map.Entry<Candidate, Double>> scores = new TreeSet<>(new Utils.ScoreComparator<Double>());
 

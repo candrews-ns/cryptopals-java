@@ -23,12 +23,8 @@ public class Set1Challenge6 {
 
     @Test
     public void breakRepeatingXor() throws Exception {
-        ArrayList<String> lines = Utils.readFromClasspath("set1challenge6.txt");
-        StringBuilder text = new StringBuilder();
-        for (String line : lines) {
-            text.append(line);
-        }
-        CryptoBuffer ciphertext = CryptoBuffer.fromBase64(text.toString());
+        String text = Utils.readFromClasspath("set1challenge6.txt");
+        CryptoBuffer ciphertext = CryptoBuffer.fromBase64(text);
 
         TreeSet<Map.Entry<Integer, Double>> keysizes = new TreeSet<>(new Utils.ScoreComparator<Double>());
 
@@ -66,6 +62,7 @@ public class Set1Challenge6 {
             key.append(c);
         String plaintext = XorCipher.xorString(ciphertext, key.toString()).toString();
 
-        System.out.println(plaintext);
+        //System.out.println(plaintext);
+        //assert(plaintext.matches("I'm back and I'm ringin' the bell"));
     }
 }

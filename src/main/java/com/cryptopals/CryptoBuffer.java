@@ -2,6 +2,12 @@ package com.cryptopals;
 
 import org.apache.commons.codec.DecoderException;
 
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -14,6 +20,10 @@ public class CryptoBuffer {
 
     public CryptoBuffer(byte[] buf) {
         this.buf = buf;
+    }
+
+    public CryptoBuffer() {
+        this.buf = new byte[0];
     }
 
     public CryptoBuffer(String s) {
@@ -86,5 +96,19 @@ public class CryptoBuffer {
         }
 
         return blocks;
+    }
+
+    public CryptoBuffer decryptAesEcb(CryptoBuffer key) {
+        CryptoBuffer plaintext = new CryptoBuffer();
+        try {
+            Cipher aes = Cipher.getInstance("AES/ECB/NoPadding");
+            SecretKey skey = new SecretKeySpec(key.buf, 0, key.buf.length, "AES");
+            aes.init(Cipher.DECRYPT_MODE, skey);
+            plaintext.buf = aes.doFinal(this.buf);
+        }
+        catch (Exception e) {
+            // nothing?
+        }
+        return plaintext;
     }
 }
