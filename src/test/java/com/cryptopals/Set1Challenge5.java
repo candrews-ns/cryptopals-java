@@ -1,7 +1,8 @@
 package com.cryptopals;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by candrews on 09/06/15.

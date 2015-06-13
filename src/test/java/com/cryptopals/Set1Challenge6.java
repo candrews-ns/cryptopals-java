@@ -1,11 +1,13 @@
 package com.cryptopals;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeSet;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by candrews on 10/06/15.
@@ -28,7 +30,7 @@ public class Set1Challenge6 {
         }
         CryptoBuffer ciphertext = CryptoBuffer.fromBase64(text.toString());
 
-        Map<Double, Integer> keysizes = new HashMap<>();
+        TreeSet<Map.Entry<Integer, Double>> keysizes = new TreeSet<>(new Utils.ScoreComparator<Double>());
 
         for (int keysize = 2; keysize <= 40; keysize++) {
             ArrayList<Double> dists = new ArrayList<>();
@@ -46,40 +48,24 @@ public class Set1Challenge6 {
             for (double dist : dists)
                 sum += dist;
             double avg = sum / dists.size();
-            keysizes.put(avg, keysize);
+            keysizes.add(new AbstractMap.SimpleImmutableEntry<>(keysize, avg));
         }
 
-        double min = Double.MAX_VALUE;
-        for (double avg : keysizes.keySet()) {
-            if (avg < min)
-                min = avg;
-        }
-
-        int keysize = keysizes.get(min);
+        int keysize = keysizes.first().getKey();
         System.out.println("keysize: " + keysize);
 
         ArrayList<CryptoBuffer> blocks = ciphertext.transpose(keysize);
         ArrayList<Character> chars = new ArrayList<>(blocks.size());
 
         for (CryptoBuffer block : blocks) {
-            HashMap<Double, Character> keys = new HashMap<>();
+            TreeSet<Map.Entry<Character, Double>> scores = new TreeSet<>(new Utils.ScoreComparator<Double>());
 
-            Character c;
-            for (c = 0; c < 256; c++) {
+            for (Character c = 0; c < 256; c++) {
                 String plaintext = XorCipher.xorCharacter(block, c).toString();
-                keys.put(Metrics.freqScore(Metrics.characterFreqs(plaintext)), c);
+                double score = Metrics.freqScore(Metrics.characterFreqs(plaintext));
+                scores.add(new AbstractMap.SimpleImmutableEntry<>(c, score));
             }
-
-            min = Double.MAX_VALUE;
-            char blockChar = 0x0;
-            for (double score : keys.keySet()) {
-                if (score < min) {
-                    min = score;
-                    blockChar = keys.get(score);
-                }
-            }
-
-            chars.add(blockChar);
+            chars.add(scores.first().getKey());
         }
 
         StringBuilder key = new StringBuilder();

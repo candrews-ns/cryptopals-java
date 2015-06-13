@@ -2,7 +2,8 @@ package com.cryptopals;
 
 import org.apache.commons.codec.DecoderException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Created by candrews on 09/06/15.
