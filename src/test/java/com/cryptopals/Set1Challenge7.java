@@ -16,7 +16,12 @@ public class Set1Challenge7 {
     public void decryptAes() throws Exception {
         CryptoBuffer ciphertext = CryptoBuffer.fromBase64(Utils.readFromClasspath("set1challenge7.txt"));
         CryptoBuffer key = new CryptoBuffer("YELLOW SUBMARINE");
-        CryptoBuffer plaintext = ciphertext.decryptAesEcb(key);
-        //System.out.println(plaintext);
+
+        Cipher aes = Cipher.getInstance("AES/ECB/NoPadding");
+        SecretKey skey = key.asSecretKey("AES");
+        aes.init(Cipher.DECRYPT_MODE, skey);
+
+        CryptoBuffer plaintext = new CryptoBuffer(aes.doFinal(ciphertext.toRawBytes()));
+        System.out.println(plaintext.toString());
     }
 }

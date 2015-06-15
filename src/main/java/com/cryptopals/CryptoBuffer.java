@@ -34,6 +34,10 @@ public class CryptoBuffer {
         return this.buf.length;
     }
 
+    public CryptoBuffer clone() {
+        return new CryptoBuffer(this.buf.clone());
+    }
+
     public static CryptoBuffer fromHex(String hex) throws DecoderException {
         return new CryptoBuffer(Encoding.decodeHex(hex));
     }
@@ -52,6 +56,18 @@ public class CryptoBuffer {
 
     public String toString() {
         return new String(buf);
+    }
+
+    public byte[] toRawBytes() {
+        return this.buf;
+    }
+
+    public void append(CryptoBuffer newChunk) {
+        int len = this.buf.length + newChunk.buf.length;
+        byte[] newBuf = new byte[len];
+        for (int i = 0; i < len; i++)
+            newBuf[i] = (i < this.buf.length) ? this.buf[i] : newChunk.buf[i - this.buf.length];
+        this.buf = newBuf;
     }
 
     public CryptoBuffer xorWith(CryptoBuffer other) {
@@ -98,19 +114,11 @@ public class CryptoBuffer {
         return blocks;
     }
 
-    public CryptoBuffer decryptAesEcb(CryptoBuffer key) {
-        CryptoBuffer plaintext = new CryptoBuffer();
-        try {
-            Cipher aes = Cipher.getInstance("AES/ECB/NoPadding");
-            SecretKey skey = new SecretKeySpec(key.buf, 0, key.buf.length, "AES");
-            aes.init(Cipher.DECRYPT_MODE, skey);
-            plaintext.buf = aes.doFinal(this.buf);
-        }
-        catch (Exception e) {
-            // nothing?
-        }
-        return plaintext;
+    public SecretKey asSecretKey (String kind) {
+        SecretKey skey = new SecretKeySpec(this.buf, 0, this.buf.length, kind);
+        return skey;
     }
+
 
     public CryptoBuffer pkcs7padTo(int padLength) {
         int bufLength = this.buf.length;
