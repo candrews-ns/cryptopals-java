@@ -2,6 +2,7 @@ package com.cryptopals;
 
 import org.apache.commons.codec.DecoderException;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
@@ -71,10 +72,17 @@ public class CryptoBuffer {
     }
 
     public CryptoBuffer xorWith(CryptoBuffer other) {
-        byte[] output = new byte[this.buf.length];
+        int len = this.buf.length;
+        if (len > other.buf.length) {
+            len = other.buf.length;
+        }
+        byte[] output = new byte[len];
         int i = 0;
-        for (byte b : this.buf)
-            output[i] = (byte) (b ^ other.buf[i++]);
+        for (byte b : this.buf) {
+            if (i < len) {
+                output[i] = (byte) (b ^ other.buf[i++]);
+            }
+        }
         return new CryptoBuffer(output);
     }
 
@@ -86,8 +94,16 @@ public class CryptoBuffer {
         return dist;
     }
 
-    public CryptoBuffer substr(int offset, int length) {
-        return new CryptoBuffer(Arrays.copyOfRange(this.buf, offset, offset + length));
+    public CryptoBuffer substr(int start, int length) {
+        int end = start + length;
+        if (end > this.buf.length) {
+            end = this.buf.length;
+        }
+        return new CryptoBuffer(Arrays.copyOfRange(this.buf, start, end));
+    }
+
+    public CryptoBuffer nullPaddedSubstr(int start, int length) {
+        return new CryptoBuffer(Arrays.copyOfRange(this.buf, start, start + length));
     }
 
     public ArrayList<CryptoBuffer> chunked(int size) {
@@ -115,8 +131,7 @@ public class CryptoBuffer {
     }
 
     public SecretKey asSecretKey (String kind) {
-        SecretKey skey = new SecretKeySpec(this.buf, 0, this.buf.length, kind);
-        return skey;
+        return new SecretKeySpec(this.buf, 0, this.buf.length, kind);
     }
 
 
@@ -130,6 +145,22 @@ public class CryptoBuffer {
             else
                 padded[i] = (byte)pad;
         }
-        return new CryptoBuffer(padded);
+        this.buf = padded;
+        return this;
+    }
+
+    public CryptoBuffer pkcs7unPad(int padLength) throws BadPaddingException {
+        ArrayList<CryptoBuffer> chunks = this.chunked(padLength);
+        CryptoBuffer chunk = chunks.get(chunks.size() - 1);
+
+        int last = padLength - 1;
+        int pad = (int)chunk.buf[last];
+        for (int pos = last; pos > (last - pad); pos--) {
+            if (chunk.buf[pos] != chunk.buf[last]) {
+                throw new BadPaddingException();
+            }
+        }
+        this.buf = Arrays.copyOfRange(this.buf, 0, (this.buf.length - pad));
+        return this;
     }
 }

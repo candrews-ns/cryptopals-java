@@ -22,6 +22,6 @@ public class Set1Challenge7 {
         aes.init(Cipher.DECRYPT_MODE, skey);
 
         CryptoBuffer plaintext = new CryptoBuffer(aes.doFinal(ciphertext.toRawBytes()));
-        System.out.println(plaintext.toString());
+        //System.out.println(plaintext.toString());
     }
 }
