@@ -40,17 +40,11 @@ public class Set2Challenge11 {
         assertEquals(ecbs, ecbs_found);
     }
 
-    private CryptoBuffer randomKey(int len) {
-        byte[] bytes = new byte[len];
-        r.nextBytes(bytes);
-        return new CryptoBuffer(bytes);
-    }
-
     private CryptoBuffer encryptWithRandomKey(CryptoBuffer plaintext) {
-        CryptoBuffer prepend = new CryptoBuffer("XXXXX").append(randomKey(r.nextInt(5)));
-        CryptoBuffer append = new CryptoBuffer("YYYYY").append(randomKey(r.nextInt(5)));
+        CryptoBuffer prepend = new CryptoBuffer("XXXXX").append(Utils.randomKey(r.nextInt(5)));
+        CryptoBuffer append = new CryptoBuffer("YYYYY").append(Utils.randomKey(r.nextInt(5)));
 
-        CryptoBuffer key = randomKey(16);
+        CryptoBuffer key = Utils.randomKey(16);
         CryptoBuffer text = prepend.append(plaintext).append(append);
 
         Cipher aes = Ciphers.aesCipher();

@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Created by candrews on 12/06/15.
@@ -42,5 +43,20 @@ public class Utils {
         public int compare(Map.Entry<?, V> o1, Map.Entry<?, V> o2) {
             return o1.getValue().compareTo(o2.getValue());
         }
+    }
+
+    public static CryptoBuffer randomKey(int len) {
+        Random r = new Random();
+        byte[] bytes = new byte[len];
+        r.nextBytes(bytes);
+        return new CryptoBuffer(bytes);
+    }
+
+    public static String stringOfLength(char c, int len) {
+        StringBuilder s = new StringBuilder(len);
+        for (int i = 0; i < len; i++) {
+            s.append(c);
+        }
+        return s.toString();
     }
 }

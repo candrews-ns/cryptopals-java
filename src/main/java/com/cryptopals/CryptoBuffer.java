@@ -19,6 +19,12 @@ public class CryptoBuffer {
         this.buf = buf;
     }
 
+    public CryptoBuffer(byte b) {
+        byte[] buf = new byte[1];
+        buf[0] = b;
+        this.buf = buf;
+    }
+
     public CryptoBuffer() {
         this.buf = new byte[0];
     }
