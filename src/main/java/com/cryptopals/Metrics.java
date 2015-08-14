@@ -8,7 +8,7 @@ import java.util.Map;
  */
 public class Metrics {
 
-    private static final HashMap<Character, Float> english = new HashMap<Character, Float>();
+    private static final HashMap<Character, Float> english = new HashMap<>();
     static {
         english.put(' ', new Float(20.0));
         english.put('e', new Float(12.702));
@@ -41,7 +41,7 @@ public class Metrics {
 
     public static Map<Character, Float> characterFreqs (String input) {
         char[] characters = input.toCharArray();
-        HashMap<Character, Float> freqs = new HashMap<Character, Float>();
+        HashMap<Character, Float> freqs = new HashMap<>();
 
         for (Character c : characters) {
             if (!freqs.containsKey(c))

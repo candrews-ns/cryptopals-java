@@ -38,8 +38,8 @@ public class Set1Challenge4 {
     }
 
     private class Candidate {
-        public char key;
-        public CryptoBuffer ciphertext;
+        public final char key;
+        public final CryptoBuffer ciphertext;
 
         public Candidate(char key, CryptoBuffer ciphertext) {
             this.key = key;

@@ -19,7 +19,7 @@ public class Utils {
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
         String line;
-        ArrayList<String> lines = new ArrayList<String>();
+        ArrayList<String> lines = new ArrayList<>();
 
         while ((line = bufferedReader.readLine()) != null) {
             lines.add(line);

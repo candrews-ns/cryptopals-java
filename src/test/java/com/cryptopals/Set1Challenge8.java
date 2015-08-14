@@ -3,7 +3,6 @@ package com.cryptopals;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -30,6 +29,5 @@ public class Set1Challenge8 {
             }
         }
         assertEquals(1, ecbs.keySet().size());
-        //System.out.println(ecbs.keySet());
     }
 }
