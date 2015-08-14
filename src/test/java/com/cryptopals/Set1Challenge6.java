@@ -6,6 +6,8 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 
@@ -62,7 +64,8 @@ public class Set1Challenge6 {
             key.append(c);
         String plaintext = XorCipher.xorString(ciphertext, key.toString()).toString();
 
-        //System.out.println(plaintext);
-        //assert(plaintext.matches("I'm back and I'm ringin' the bell"));
+        Pattern p = Pattern.compile("I'm back and I'm ringin' the bell");
+        Matcher m = p.matcher(plaintext);
+        assert(m.find());
     }
 }

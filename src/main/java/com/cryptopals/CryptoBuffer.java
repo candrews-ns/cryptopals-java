@@ -3,12 +3,8 @@ package com.cryptopals;
 import org.apache.commons.codec.DecoderException;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -29,6 +25,18 @@ public class CryptoBuffer {
 
     public CryptoBuffer(String s) {
         this.buf = s.getBytes();
+    }
+
+    public CryptoBuffer(ArrayList<CryptoBuffer> chunks) {
+        CryptoBuffer first = null;
+        for (CryptoBuffer chunk : chunks) {
+            if (first == null) {
+                first = chunk;
+            } else {
+                first.append(chunk);
+            }
+        }
+        this.buf = first.toRawBytes();
     }
 
     public int length() {
@@ -63,12 +71,13 @@ public class CryptoBuffer {
         return this.buf;
     }
 
-    public void append(CryptoBuffer newChunk) {
+    public CryptoBuffer append(CryptoBuffer newChunk) {
         int len = this.buf.length + newChunk.buf.length;
         byte[] newBuf = new byte[len];
         for (int i = 0; i < len; i++)
             newBuf[i] = (i < this.buf.length) ? this.buf[i] : newChunk.buf[i - this.buf.length];
         this.buf = newBuf;
+        return this;
     }
 
     public CryptoBuffer xorWith(CryptoBuffer other) {
@@ -134,19 +143,21 @@ public class CryptoBuffer {
         return new SecretKeySpec(this.buf, 0, this.buf.length, kind);
     }
 
-
     public CryptoBuffer pkcs7padTo(int padLength) {
-        int bufLength = this.buf.length;
+        ArrayList<CryptoBuffer> chunks = this.chunked(padLength);
+        CryptoBuffer chunk = chunks.get(chunks.size() - 1);
+
+        int bufLength = chunk.buf.length;
         int pad = padLength - bufLength;
         byte[] padded = new byte[padLength];
         for (int i = 0; i < padLength; i++) {
             if (i < bufLength)
-                padded[i] = this.buf[i];
+                padded[i] = chunk.buf[i];
             else
                 padded[i] = (byte)pad;
         }
-        this.buf = padded;
-        return this;
+        chunk.buf = padded;
+        return new CryptoBuffer(chunks);
     }
 
     public CryptoBuffer pkcs7unPad(int padLength) throws BadPaddingException {

@@ -4,8 +4,8 @@ import org.junit.Test;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.security.Key;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by candrews on 13/06/15.
@@ -21,7 +21,10 @@ public class Set1Challenge7 {
         SecretKey skey = key.asSecretKey("AES");
         aes.init(Cipher.DECRYPT_MODE, skey);
 
-        CryptoBuffer plaintext = new CryptoBuffer(aes.doFinal(ciphertext.toRawBytes()));
-        //System.out.println(plaintext.toString());
+        CryptoBuffer plaintext = Modes.ecb(aes, ciphertext);
+
+        Pattern p = Pattern.compile("I'm back and I'm ringin' the bell");
+        Matcher m = p.matcher(plaintext.toString());
+        assert(m.find());
     }
 }

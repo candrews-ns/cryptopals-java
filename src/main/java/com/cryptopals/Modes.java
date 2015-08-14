@@ -9,6 +9,10 @@ import javax.crypto.IllegalBlockSizeException;
  */
 public class Modes {
 
+    public static CryptoBuffer ecb(Cipher cipher, CryptoBuffer text) throws BadPaddingException, IllegalBlockSizeException {
+        return new CryptoBuffer(cipher.doFinal(text.pkcs7padTo(16).toRawBytes()));
+    }
+
     public static CryptoBuffer cbcEncrypt(Cipher cipher, CryptoBuffer plaintext, CryptoBuffer iv) throws BadPaddingException, IllegalBlockSizeException {
         CryptoBuffer ciphertext = new CryptoBuffer();
         CryptoBuffer state = iv.clone();

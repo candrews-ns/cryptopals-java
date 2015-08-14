@@ -5,6 +5,8 @@ import static org.junit.Assert.assertEquals;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by candrews on 14/06/15.
@@ -22,14 +24,12 @@ public class Set2Challenge10 {
         aes.init(Cipher.ENCRYPT_MODE, skey);
 
         CryptoBuffer ciphertext = Modes.cbcEncrypt(aes, plaintext, iv);
-        //System.out.println(ciphertext.toHex());
 
         aes = Cipher.getInstance("AES/ECB/NoPadding");
         skey = key.asSecretKey("AES");
         aes.init(Cipher.DECRYPT_MODE, skey);
 
         CryptoBuffer plaintext2 = Modes.cbcDecrypt(aes, ciphertext, iv);
-        //System.out.println(plaintext2.toString());
         assertEquals(plaintext.toString(), plaintext2.toString());
     }
 
@@ -44,6 +44,9 @@ public class Set2Challenge10 {
         aes.init(Cipher.DECRYPT_MODE, skey);
 
         CryptoBuffer plaintext = Modes.cbcDecrypt(aes, ciphertext, iv);
-        //System.out.println(plaintext.toString());
+
+        Pattern p = Pattern.compile("I'm back and I'm ringin' the bell");
+        Matcher m = p.matcher(plaintext.toString());
+        assert(m.find());
     }
 }
