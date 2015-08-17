@@ -7,9 +7,10 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SecretKey;
 import java.security.InvalidKeyException;
-import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by candrews on 14/08/15.
@@ -28,28 +29,16 @@ public class Set2Challenge12 {
 
     @Test
     public void ecbDecryption() throws Exception {
-        CryptoBuffer plaintext = new CryptoBuffer();
 
-        for (int i = 0; i < 256; i++) {
-            CryptoBuffer prefix = new CryptoBuffer(Utils.stringOfLength('A', (255 - i)));
-            HashMap<String, CryptoBuffer> map = new HashMap<>();
+        int blocksize = Attacks.findBlocksize(
+                (CryptoBuffer text) -> this.encryptWithRandomKey(text)
+        );
+        assertEquals(16, blocksize);
 
-            for (int j = 0; j < 127; j++) {
-                CryptoBuffer b = new CryptoBuffer((byte)j);
-                CryptoBuffer trial = prefix.clone().append(plaintext).append(b);
-                CryptoBuffer ciphertext = encryptWithRandomKey(trial).substr(0, 256);
-                map.put(ciphertext.toString(), b);
-            }
-
-            CryptoBuffer ciphertext = encryptWithRandomKey(prefix).substr(0, 256);
-            CryptoBuffer found = map.get(ciphertext.toString());
-
-            if (found == null) {
-                break;
-            }
-
-            plaintext.append(found);
-        }
+        CryptoBuffer plaintext = Attacks.breakEcb(
+                blocksize,
+                (CryptoBuffer text) -> this.encryptWithRandomKey(text)
+        );
         Pattern p = Pattern.compile("No, I just drove by");
         Matcher m = p.matcher(plaintext.toString());
         assert(m.find());
