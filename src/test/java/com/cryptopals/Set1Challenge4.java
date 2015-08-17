@@ -2,10 +2,7 @@ package com.cryptopals;
 
 import org.junit.Test;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.TreeSet;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -18,7 +15,7 @@ public class Set1Challenge4 {
     public void findXor() throws Exception {
         ArrayList<String> lines = Utils.readLinesFromClasspath("set1challenge4.txt");
 
-        TreeSet<Map.Entry<Candidate, Double>> scores = new TreeSet<>(new Utils.ScoreComparator<Double>());
+        TreeSet<Map.Entry<Candidate, Double>> scores = new TreeSet<>(new CandidateComparator<Double>());
 
         for (String ciphertext : lines) {
             for (Character c = 0; c < 256; c++) {
@@ -46,5 +43,12 @@ public class Set1Challenge4 {
             this.ciphertext = ciphertext;
         }
     }
+
+    private static class CandidateComparator<V extends Comparable<V>> implements Comparator<Map.Entry<?, V>> {
+        public int compare(Map.Entry<?, V> o1, Map.Entry<?, V> o2) {
+            return o1.getValue().compareTo(o2.getValue());
+        }
+    }
+
 }
 

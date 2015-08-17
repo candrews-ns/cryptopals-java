@@ -25,7 +25,7 @@ public class XorCipher {
     }
 
     public static char findXorKey(CryptoBuffer ciphertext) {
-        TreeSet<Map.Entry<Character, Double>> scores = new TreeSet<>(new Utils.ScoreComparator<Double>());
+        TreeSet<Map.Entry<Character, Double>> scores = new TreeSet<>(new Utils.ScoreComparator<Character, Double>());
         for (Character c = 0; c < 256; c++) {
             String plaintext = xorCharacter(ciphertext, c).toString();
             double score = Metrics.freqScore(Metrics.characterFreqs(plaintext));

@@ -28,7 +28,7 @@ public class Set1Challenge6 {
         String text = Utils.readFromClasspath("set1challenge6.txt");
         CryptoBuffer ciphertext = CryptoBuffer.fromBase64(text);
 
-        TreeSet<Map.Entry<Integer, Double>> keysizes = new TreeSet<>(new Utils.ScoreComparator<Double>());
+        TreeSet<Map.Entry<Integer, Double>> keysizes = new TreeSet<>(new Utils.ScoreComparator<Integer, Double>());
 
         for (int keysize = 2; keysize <= 40; keysize++) {
             ArrayList<Double> dists = new ArrayList<>();

@@ -117,6 +117,10 @@ public class CryptoBuffer {
         return new CryptoBuffer(Arrays.copyOfRange(this.buf, start, end));
     }
 
+    public CryptoBuffer chop() {
+        return this.substr(0, (this.length() - 1));
+    }
+
     public CryptoBuffer nullPaddedSubstr(int start, int length) {
         return new CryptoBuffer(Arrays.copyOfRange(this.buf, start, start + length));
     }

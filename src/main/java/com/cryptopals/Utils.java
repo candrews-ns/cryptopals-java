@@ -38,10 +38,14 @@ public class Utils {
         return text.toString();
     }
 
-
-    public static class ScoreComparator<V extends Comparable<V>> implements Comparator<Map.Entry<?, V>> {
-        public int compare(Map.Entry<?, V> o1, Map.Entry<?, V> o2) {
-            return o1.getValue().compareTo(o2.getValue());
+    public static class ScoreComparator<K extends Comparable<K>, V extends Comparable<V>> implements Comparator<Map.Entry<K, V>> {
+        public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
+            int r = o1.getValue().compareTo(o2.getValue());
+            if (r != 0) {
+                return r;
+            } else {
+                return o2.getKey().compareTo(o1.getKey());
+            }
         }
     }
 
