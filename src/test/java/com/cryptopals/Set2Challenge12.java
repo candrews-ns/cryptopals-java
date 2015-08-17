@@ -45,18 +45,6 @@ public class Set2Challenge12 {
 
     private CryptoBuffer encryptWithRandomKey(CryptoBuffer plaintext) {
         plaintext.append(target);
-
-        Cipher aes = Ciphers.aesCipher();
-        SecretKey skey = key.asSecretKey("AES");
-        try {
-            aes.init(Cipher.ENCRYPT_MODE, skey);
-        } catch (InvalidKeyException ignored) { }
-
-        CryptoBuffer ciphertext = new CryptoBuffer();
-        try {
-            ciphertext = Modes.ecb(aes, plaintext);
-        } catch (BadPaddingException | IllegalBlockSizeException ignored) { }
-
-        return ciphertext;
+        return Utils.aesEcbEncryptWithKey(key, plaintext);
     }
 }

@@ -1,8 +1,13 @@
 package com.cryptopals;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.SecretKey;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Map;
@@ -62,5 +67,56 @@ public class Utils {
             s.append(c);
         }
         return s.toString();
+    }
+
+    public static CryptoBuffer aesEcbEncryptWithKey(CryptoBuffer key, CryptoBuffer plaintext) {
+        Cipher aes = Ciphers.aesCipher();
+        SecretKey skey = key.asSecretKey("AES");
+        try {
+            aes.init(Cipher.ENCRYPT_MODE, skey);
+        } catch (InvalidKeyException ignored) {
+        }
+
+        CryptoBuffer ciphertext = new CryptoBuffer();
+        try {
+            ciphertext = Modes.ecb(aes, plaintext);
+        } catch (BadPaddingException | IllegalBlockSizeException ignored) {
+        }
+
+        return ciphertext;
+    }
+
+    public static CryptoBuffer aesCbcEncryptWithKey(CryptoBuffer key, CryptoBuffer plaintext, CryptoBuffer iv) {
+        Cipher aes = Ciphers.aesCipher();
+        SecretKey skey = key.asSecretKey("AES");
+        try {
+            aes.init(Cipher.ENCRYPT_MODE, skey);
+        } catch (InvalidKeyException ignored) {
+        }
+
+        CryptoBuffer ciphertext = new CryptoBuffer();
+        try {
+            ciphertext = Modes.cbcEncrypt(aes, plaintext, iv);
+        } catch (BadPaddingException | IllegalBlockSizeException ignored) {
+        }
+
+        return ciphertext;
+    }
+
+    public static CryptoBuffer aesCbcDecryptWithKey(CryptoBuffer key, CryptoBuffer ciphertext, CryptoBuffer iv) {
+        Cipher aes = Ciphers.aesCipher();
+        SecretKey skey = key.asSecretKey("AES");
+        try {
+            aes.init(Cipher.DECRYPT_MODE, skey);
+        } catch (InvalidKeyException ignored) {
+        }
+
+        CryptoBuffer plaintext = new CryptoBuffer();
+        try {
+            plaintext = Modes.cbcDecrypt(aes, ciphertext, iv);
+        } catch (BadPaddingException | IllegalBlockSizeException ignored) {
+        }
+
+        return plaintext;
     }
 }

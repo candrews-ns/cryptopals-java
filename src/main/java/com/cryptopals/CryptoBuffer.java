@@ -184,4 +184,9 @@ public class CryptoBuffer {
         this.buf = Arrays.copyOfRange(this.buf, 0, (this.buf.length - pad));
         return this;
     }
+
+    public void flipBit(int blocksize, int block, int byte_offset, int bit_offset) {
+        int mask = 0x01 << bit_offset;
+        this.buf[(blocksize * block) + byte_offset] ^= mask;
+    }
 }

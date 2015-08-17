@@ -52,17 +52,6 @@ public class Set2Challenge14 {
         CryptoBuffer prefix = new CryptoBuffer(Utils.stringOfLength('X', r.nextInt(17)));
         plaintext = prefix.append(plaintext);
 
-        Cipher aes = Ciphers.aesCipher();
-        SecretKey skey = key.asSecretKey("AES");
-        try {
-            aes.init(Cipher.ENCRYPT_MODE, skey);
-        } catch (InvalidKeyException ignored) { }
-
-        CryptoBuffer ciphertext = new CryptoBuffer();
-        try {
-            ciphertext = Modes.ecb(aes, plaintext);
-        } catch (BadPaddingException | IllegalBlockSizeException ignored) { }
-
-        return ciphertext;
+        return Utils.aesEcbEncryptWithKey(key, plaintext);
     }
 }

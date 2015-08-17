@@ -17,7 +17,7 @@ public class Set2Challenge10 {
     public void cbcEncryptDecrypt() throws Exception {
         CryptoBuffer plaintext = new CryptoBuffer("Some stuff that's really quite a lot longer than 16 bytes.");
         CryptoBuffer key = new CryptoBuffer("YELLOW SUBMARINE");
-        CryptoBuffer iv = new CryptoBuffer(new byte[16]);
+        CryptoBuffer iv = Utils.randomKey(16);
 
         Cipher aes = Cipher.getInstance("AES/ECB/NoPadding");
         SecretKey skey = key.asSecretKey("AES");
