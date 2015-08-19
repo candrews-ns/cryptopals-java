@@ -1,7 +1,11 @@
 package com.cryptopals;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by candrews on 05/06/15.
@@ -84,4 +88,51 @@ public class Metrics {
         return score;
     }
 
+    private static final Trigrams trigrams;
+
+    static {
+        try {
+            trigrams = new Trigrams("trigrams.txt");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ExceptionInInitializerError(e.getLocalizedMessage());
+        }
+    }
+
+    public static ArrayList<CryptoBuffer> allTrigrams() {
+        return trigrams.getTrigrams();
+    }
+
+    public static double trigramScore(CryptoBuffer text) {
+        int total = 0;
+        for (Pattern p : trigrams.patterns.keySet()) {
+            Matcher m = p.matcher(text.toString());
+            if (m.find()) {
+                total += trigrams.patterns.get(p);
+            }
+        }
+        return total / text.length();
+    }
+
+    private static class Trigrams {
+        private final ArrayList<CryptoBuffer> trigrams;
+        private final HashMap<Pattern, Integer> patterns;
+
+        public Trigrams(String filename) throws Exception {
+            ArrayList<String> lines = Utils.readLinesFromClasspath("trigrams.txt");
+
+            trigrams = new ArrayList<>();
+            patterns = new HashMap<>();
+
+            for (String line : lines) {
+                String trigram = line.substring(0, 3).toLowerCase();
+                trigrams.add(new CryptoBuffer(trigram));
+                patterns.put(Pattern.compile(trigram), Integer.parseInt(line.substring(4)));
+            }
+        }
+
+        public ArrayList<CryptoBuffer> getTrigrams() {
+            return trigrams;
+        }
+    }
 }

@@ -3,9 +3,7 @@ package com.cryptopals;
 import org.junit.Test;
 
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SecretKey;
-import java.security.InvalidKeyException;
 
 import static org.junit.Assert.assertEquals;
 
