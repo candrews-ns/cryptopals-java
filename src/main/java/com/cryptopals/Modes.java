@@ -3,6 +3,8 @@ package com.cryptopals;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * Created by candrews on 14/06/15.
@@ -16,7 +18,7 @@ public class Modes {
     public static CryptoBuffer cbcEncrypt(Cipher cipher, CryptoBuffer iv, CryptoBuffer plaintext) throws BadPaddingException, IllegalBlockSizeException {
         CryptoBuffer ciphertext = new CryptoBuffer();
         CryptoBuffer state = iv.clone();
-        for (CryptoBuffer block : plaintext.chunked(iv.length())) {
+        for (CryptoBuffer block : plaintext.chunked(cipher.getBlockSize())) {
             state = new CryptoBuffer(cipher.doFinal(state.xorWith(block.pkcs7padTo(cipher.getBlockSize())).toRawBytes()));
             ciphertext.append(state);
         }
@@ -26,10 +28,34 @@ public class Modes {
     public static CryptoBuffer cbcDecrypt(Cipher cipher, CryptoBuffer iv, CryptoBuffer ciphertext) throws BadPaddingException, IllegalBlockSizeException {
         CryptoBuffer plaintext = new CryptoBuffer();
         CryptoBuffer state = iv.clone();
-        for (CryptoBuffer block : ciphertext.chunked(iv.length())) {
+        for (CryptoBuffer block : ciphertext.chunked(cipher.getBlockSize())) {
             plaintext.append(state.xorWith(new CryptoBuffer(cipher.doFinal(block.toRawBytes()))));
             state = block;
         }
         return plaintext.pkcs7unPad(cipher.getBlockSize());
+    }
+
+    private static ByteBuffer buffer = getBuffer();
+
+    private static ByteBuffer getBuffer() {
+        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        return buffer;
+    }
+
+    public static CryptoBuffer ctr(Cipher cipher, CryptoBuffer nonce, CryptoBuffer text) throws BadPaddingException, IllegalBlockSizeException {
+
+        CryptoBuffer out = new CryptoBuffer();
+        long counter = 0;
+        for (CryptoBuffer block : text.chunked(cipher.getBlockSize())) {
+            buffer.putLong(0, counter);
+            CryptoBuffer ctrbuf = new CryptoBuffer(buffer.array());
+            CryptoBuffer keystream = new CryptoBuffer(
+                    cipher.doFinal(nonce.clone().append(ctrbuf).toRawBytes())
+            );
+            out.append(keystream.xorWith(block));
+            counter++;
+        }
+        return out;
     }
 }
