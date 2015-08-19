@@ -119,4 +119,11 @@ public class Utils {
 
         return plaintext;
     }
+
+    public static CryptoBuffer aesCtrEncryptWithKey(CryptoBuffer key, CryptoBuffer nonce, CryptoBuffer plaintext) throws InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        Cipher aes = Ciphers.aesCipher();
+        SecretKey skey = key.asSecretKey("AES");
+        aes.init(Cipher.ENCRYPT_MODE, skey);
+        return Modes.ctr(aes, nonce, plaintext);
+    }
 }

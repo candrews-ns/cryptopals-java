@@ -25,7 +25,7 @@ public class Set3Challenge19 {
         int length = Integer.MAX_VALUE;
         for (String line : lines) {
             CryptoBuffer plaintext = CryptoBuffer.fromBase64(line);
-            CryptoBuffer ciphertext = encryptCtr(plaintext);
+            CryptoBuffer ciphertext = Utils.aesCtrEncryptWithKey(key, nonce, plaintext);
             ciphertexts.add(ciphertext);
             if (ciphertext.length() < length) {
                 length = ciphertext.length();
@@ -57,13 +57,6 @@ public class Set3Challenge19 {
             CryptoBuffer plaintext = ciphertext.xorWith(keystream);
             System.out.println(plaintext);
         }
-    }
-
-    private CryptoBuffer encryptCtr(CryptoBuffer plaintext) throws InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-        Cipher aes = Ciphers.aesCipher();
-        SecretKey skey = key.asSecretKey("AES");
-        aes.init(Cipher.ENCRYPT_MODE, skey);
-        return Modes.ctr(aes, nonce, plaintext);
     }
 
     private class TrigramScore {
