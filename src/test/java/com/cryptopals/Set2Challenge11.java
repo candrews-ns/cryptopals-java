@@ -57,7 +57,7 @@ public class Set2Challenge11 {
         try {
             if (r.nextDouble() >= 0.5) {
                 CryptoBuffer iv = new CryptoBuffer(new byte[16]);
-                ciphertext = Modes.cbcEncrypt(aes, text, iv);
+                ciphertext = Modes.cbcEncrypt(aes, iv, text);
             } else {
                 ecbs++;
                 ciphertext = Modes.ecb(aes, text);

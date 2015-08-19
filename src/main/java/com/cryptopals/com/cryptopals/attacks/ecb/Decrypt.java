@@ -1,13 +1,17 @@
-package com.cryptopals;
+package com.cryptopals.com.cryptopals.attacks.ecb;
 
+import com.cryptopals.CryptoBuffer;
+import com.cryptopals.Utils;
+
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
  * Created by candrews on 17/08/15.
  */
-public class Attacks {
+public class Decrypt {
 
-    interface Oracle {
+    public interface Oracle {
         CryptoBuffer test(CryptoBuffer text);
     }
 

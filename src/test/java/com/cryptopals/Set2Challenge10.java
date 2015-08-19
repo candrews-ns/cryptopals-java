@@ -23,13 +23,13 @@ public class Set2Challenge10 {
         SecretKey skey = key.asSecretKey("AES");
         aes.init(Cipher.ENCRYPT_MODE, skey);
 
-        CryptoBuffer ciphertext = Modes.cbcEncrypt(aes, plaintext, iv);
+        CryptoBuffer ciphertext = Modes.cbcEncrypt(aes, iv, plaintext);
 
         aes = Cipher.getInstance("AES/ECB/NoPadding");
         skey = key.asSecretKey("AES");
         aes.init(Cipher.DECRYPT_MODE, skey);
 
-        CryptoBuffer plaintext2 = Modes.cbcDecrypt(aes, ciphertext, iv);
+        CryptoBuffer plaintext2 = Modes.cbcDecrypt(aes, iv, ciphertext);
         assertEquals(plaintext.toString(), plaintext2.toString());
     }
 
@@ -43,7 +43,7 @@ public class Set2Challenge10 {
         SecretKey skey = key.asSecretKey("AES");
         aes.init(Cipher.DECRYPT_MODE, skey);
 
-        CryptoBuffer plaintext = Modes.cbcDecrypt(aes, ciphertext, iv);
+        CryptoBuffer plaintext = Modes.cbcDecrypt(aes, iv, ciphertext);
 
         Pattern p = Pattern.compile("I'm back and I'm ringin' the bell");
         Matcher m = p.matcher(plaintext.toString());

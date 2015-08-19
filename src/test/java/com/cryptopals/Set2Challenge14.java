@@ -1,12 +1,8 @@
 package com.cryptopals;
 
+import com.cryptopals.com.cryptopals.attacks.ecb.Decrypt;
 import org.junit.Test;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.SecretKey;
-import java.security.InvalidKeyException;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,15 +28,15 @@ public class Set2Challenge14 {
 
     @Test
     public void ecbDecryptionWithRandomPadding() throws Exception {
-        Attacks.Oracle oracle = (CryptoBuffer text) -> this.encryptWithRandomKey(text);
+        Decrypt.Oracle oracle = (CryptoBuffer text) -> this.encryptWithRandomKey(text);
 
-        int blocksize = Attacks.findBlocksize(oracle);
+        int blocksize = Decrypt.findBlocksize(oracle);
         assertEquals(16, blocksize);
 
-        boolean isEcb = Attacks.findEcb(blocksize, oracle);
+        boolean isEcb = Decrypt.findEcb(blocksize, oracle);
         assert(isEcb);
 
-        CryptoBuffer plaintext = Attacks.breakEcbWithPrefix(blocksize, oracle);
+        CryptoBuffer plaintext = Decrypt.breakEcbWithPrefix(blocksize, oracle);
         Pattern p = Pattern.compile("No, I just drove by");
         Matcher m = p.matcher(plaintext.toString());
         assert(m.find());

@@ -2,7 +2,7 @@ package com.cryptopals;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
+import javax.crypto.BadPaddingException;
 import java.util.HashMap;
 
 /**
@@ -14,7 +14,7 @@ public class Set2Challenge16 {
     private final static CryptoBuffer iv = Utils.randomKey(16); //new CryptoBuffer(new byte[16]);
 
     @Test
-    public void bitFlip() {
+    public void bitFlip() throws Exception {
         String userdata = ":admin<true";
         CryptoBuffer cookie = createCookie(userdata);
 
@@ -30,12 +30,12 @@ public class Set2Challenge16 {
         userdata = userdata.replaceAll("(;|=)", "");
 
         CryptoBuffer plaintext = new CryptoBuffer(prefix + userdata + suffix);
-        CryptoBuffer cookie = Utils.aesCbcEncryptWithKey(key, plaintext, iv);
+        CryptoBuffer cookie = Utils.aesCbcEncryptWithKey(key, iv, plaintext);
         return cookie;
     }
 
-    private boolean checkCookie(CryptoBuffer cookie) {
-        CryptoBuffer plaintext = Utils.aesCbcDecryptWithKey(key, cookie, iv);
+    private boolean checkCookie(CryptoBuffer cookie) throws BadPaddingException {
+        CryptoBuffer plaintext = Utils.aesCbcDecryptWithKey(key, iv, cookie);
         HashMap<String, String> values = parseCookieString(plaintext.toString());
         return values.containsKey("admin") && values.get("admin").equals("true");
     }

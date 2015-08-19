@@ -176,6 +176,9 @@ public class CryptoBuffer {
 
         int last = padLength - 1;
         int pad = (int)chunk.buf[last];
+        if (pad == 0) {
+            throw new BadPaddingException();
+        }
         for (int pos = last; pos > (last - pad); pos--) {
             if (chunk.buf[pos] != chunk.buf[last]) {
                 throw new BadPaddingException();
@@ -188,5 +191,9 @@ public class CryptoBuffer {
     public void flipBit(int blocksize, int block, int byte_offset, int bit_offset) {
         int mask = 0x01 << bit_offset;
         this.buf[(blocksize * block) + byte_offset] ^= mask;
+    }
+
+    public void xorByte(int blocksize, int block, int offset, byte b) {
+        this.buf[(blocksize * block) + offset] ^= b;
     }
 }

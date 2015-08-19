@@ -86,7 +86,7 @@ public class Utils {
         return ciphertext;
     }
 
-    public static CryptoBuffer aesCbcEncryptWithKey(CryptoBuffer key, CryptoBuffer plaintext, CryptoBuffer iv) {
+    public static CryptoBuffer aesCbcEncryptWithKey(CryptoBuffer key, CryptoBuffer iv, CryptoBuffer plaintext) {
         Cipher aes = Ciphers.aesCipher();
         SecretKey skey = key.asSecretKey("AES");
         try {
@@ -96,14 +96,14 @@ public class Utils {
 
         CryptoBuffer ciphertext = new CryptoBuffer();
         try {
-            ciphertext = Modes.cbcEncrypt(aes, plaintext, iv);
+            ciphertext = Modes.cbcEncrypt(aes, iv, plaintext);
         } catch (BadPaddingException | IllegalBlockSizeException ignored) {
         }
 
         return ciphertext;
     }
 
-    public static CryptoBuffer aesCbcDecryptWithKey(CryptoBuffer key, CryptoBuffer ciphertext, CryptoBuffer iv) {
+    public static CryptoBuffer aesCbcDecryptWithKey(CryptoBuffer key, CryptoBuffer iv, CryptoBuffer ciphertext) throws BadPaddingException {
         Cipher aes = Ciphers.aesCipher();
         SecretKey skey = key.asSecretKey("AES");
         try {
@@ -113,8 +113,8 @@ public class Utils {
 
         CryptoBuffer plaintext = new CryptoBuffer();
         try {
-            plaintext = Modes.cbcDecrypt(aes, ciphertext, iv);
-        } catch (BadPaddingException | IllegalBlockSizeException ignored) {
+            plaintext = Modes.cbcDecrypt(aes, iv, ciphertext);
+        } catch (IllegalBlockSizeException ignored) {
         }
 
         return plaintext;
