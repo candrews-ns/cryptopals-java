@@ -14,5 +14,6 @@ public class Set4Challenge28 {
         CryptoBuffer mac = text.macSha1(key);
 
         assert(MACs.authKeyedMac(key, text, mac));
+        assert(!MACs.authKeyedMac(key, text.append(new CryptoBuffer("yeah")), mac));
     }
 }
