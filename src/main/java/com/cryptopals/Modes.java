@@ -1,6 +1,7 @@
 package com.cryptopals;
 
 import com.cryptopals.random.MT19937;
+import org.apache.commons.codec.digest.Crypt;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -28,13 +29,18 @@ public class Modes {
     }
 
     public static CryptoBuffer cbcDecrypt(Cipher cipher, CryptoBuffer iv, CryptoBuffer ciphertext) throws BadPaddingException, IllegalBlockSizeException {
+        CryptoBuffer plaintext = cbcDecryptWithoutPaddingCheck(cipher, iv, ciphertext);
+        return plaintext.pkcs7unPad(cipher.getBlockSize());
+    }
+
+    public static CryptoBuffer cbcDecryptWithoutPaddingCheck(Cipher cipher, CryptoBuffer iv, CryptoBuffer ciphertext) throws BadPaddingException, IllegalBlockSizeException {
         CryptoBuffer plaintext = new CryptoBuffer();
         CryptoBuffer state = iv.clone();
         for (CryptoBuffer block : ciphertext.chunked(cipher.getBlockSize())) {
             plaintext.append(state.xorWith(new CryptoBuffer(cipher.doFinal(block.toRawBytes()))));
             state = block;
         }
-        return plaintext.pkcs7unPad(cipher.getBlockSize());
+        return plaintext;
     }
 
     private static ByteBuffer buffer = getBuffer();
