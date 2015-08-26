@@ -8,10 +8,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.InvalidKeyException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Created by candrews on 12/06/15.
@@ -125,5 +122,18 @@ public class Utils {
         SecretKey skey = key.asSecretKey("AES");
         aes.init(Cipher.ENCRYPT_MODE, skey);
         return Modes.ctr(aes, nonce, plaintext);
+    }
+
+    public static HashMap<String, String> parseCookieString(String cookie) {
+        HashMap<String, String> c = new HashMap<>();
+        String[] chunks = cookie.split(";");
+        for (String chunk : chunks) {
+            String[] kv = chunk.split("=");
+            if (kv.length == 2) {
+                c.put(kv[0], kv[1]);
+            }
+        }
+
+        return c;
     }
 }

@@ -36,20 +36,7 @@ public class Set2Challenge16 {
 
     private boolean checkCookie(CryptoBuffer cookie) throws BadPaddingException {
         CryptoBuffer plaintext = Utils.aesCbcDecryptWithKey(key, iv, cookie);
-        HashMap<String, String> values = parseCookieString(plaintext.toString());
+        HashMap<String, String> values = Utils.parseCookieString(plaintext.toString());
         return values.containsKey("admin") && values.get("admin").equals("true");
-    }
-
-    private HashMap<String, String> parseCookieString(String cookie) {
-        HashMap<String, String> c = new HashMap<>();
-        String[] chunks = cookie.split(";");
-        for (String chunk : chunks) {
-            String[] kv = chunk.split("=");
-            if (kv.length == 2) {
-                c.put(kv[0], kv[1]);
-            }
-        }
-
-        return c;
     }
 }
