@@ -1,5 +1,7 @@
 package com.cryptopals;
 
+import com.cryptopals.random.MT19937;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -44,7 +46,6 @@ public class Modes {
     }
 
     public static CryptoBuffer ctr(Cipher cipher, CryptoBuffer nonce, CryptoBuffer text) throws BadPaddingException, IllegalBlockSizeException {
-
         CryptoBuffer out = new CryptoBuffer();
         long counter = 0;
         for (CryptoBuffer block : text.chunked(cipher.getBlockSize())) {
@@ -55,6 +56,18 @@ public class Modes {
             );
             out.append(keystream.xorWith(block));
             counter++;
+        }
+        return out;
+    }
+
+    public static CryptoBuffer prngStream(MT19937 prng, CryptoBuffer text) {
+        CryptoBuffer out = new CryptoBuffer();
+        for (CryptoBuffer block : text.chunked(Integer.SIZE / 8)) {
+            int next = prng.nextInteger();
+            CryptoBuffer keystream = new CryptoBuffer(
+                    ByteBuffer.allocate(Integer.SIZE / 8).putInt(next).array()
+            );
+            out.append(keystream.xorWith(block));
         }
         return out;
     }

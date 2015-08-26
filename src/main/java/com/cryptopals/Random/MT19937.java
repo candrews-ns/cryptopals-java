@@ -43,7 +43,7 @@ public class MT19937 {
     }
 
     private void generate() {
-        for (int i = 1; i <= 623; i++) {
+        for (int i = 0; i <= 623; i++) {
             int y = (mt[i] & 0x80000000) + (mt[(i + 1) % 624] & 0x7fffffff);
             mt[i] = mt[(i + 397) % 624] ^ (y >>> 1);
             if ((y % 2) != 0) {

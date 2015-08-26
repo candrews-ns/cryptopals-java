@@ -29,7 +29,7 @@ public class Set3Challenge23 {
         for (int i = 0; i < 100000; i++) {
             int source = r.nextInteger();
             int target = r2.nextInteger();
-            System.out.println(source + " " + target + ((source != target) ? " <===" : ""));
+            //System.out.println(source + " " + target + ((source != target) ? " <===" : ""));
             if (source != target) {
                 differences++;
             }

@@ -14,7 +14,7 @@ public class Set3Challenge21 {
     public void getRandomNumbers() {
         MT19937 r = new MT19937(1);
         for (int i = 0; i < 20; i++) {
-            System.out.println(r.nextInteger());
+            //System.out.println(r.nextInteger());
         }
     }
 }

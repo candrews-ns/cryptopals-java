@@ -109,8 +109,18 @@ public class CryptoBuffer {
         return dist;
     }
 
-    public CryptoBuffer substr(int start, int length) {
-        int end = start + length;
+    public CryptoBuffer substr(int offset, int length) {
+        int start;
+        int end;
+        if (offset < 0) {
+            // perl-style "negative start means backwards from end"
+            start = this.buf.length - Math.abs(offset);
+            end = start + length;
+        }
+        else {
+            start = offset;
+            end = offset + length;
+        }
         if (end > this.buf.length) {
             end = this.buf.length;
         }
