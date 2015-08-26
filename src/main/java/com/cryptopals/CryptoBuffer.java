@@ -127,6 +127,13 @@ public class CryptoBuffer {
         return new CryptoBuffer(Arrays.copyOfRange(this.buf, start, end));
     }
 
+    public CryptoBuffer replaceSubstr(int offset, int length, CryptoBuffer newtext) {
+        CryptoBuffer out = this.substr(0, offset);
+        out.append(newtext);
+        out.append(this.substr((offset + length), (this.length() - (offset + length))));
+        return out;
+    }
+
     public CryptoBuffer chop() {
         return this.substr(0, (this.length() - 1));
     }
