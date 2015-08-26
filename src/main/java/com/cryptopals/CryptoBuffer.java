@@ -213,4 +213,8 @@ public class CryptoBuffer {
     public void xorByte(int blocksize, int block, int offset, byte b) {
         this.buf[(blocksize * block) + offset] ^= b;
     }
+
+    public CryptoBuffer macSha1(CryptoBuffer key) {
+        return MACs.keyedMac(key, this);
+    }
 }
