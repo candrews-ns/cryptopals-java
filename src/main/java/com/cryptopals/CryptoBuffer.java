@@ -214,7 +214,11 @@ public class CryptoBuffer {
         this.buf[(blocksize * block) + offset] ^= b;
     }
 
+    public CryptoBuffer sha1() {
+        return SHA1.encode(this);
+    }
+
     public CryptoBuffer macSha1(CryptoBuffer key) {
-        return MACs.keyedMac(key, this);
+        return MACs.keyedSha1Mac(key, this);
     }
 }

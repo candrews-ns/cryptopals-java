@@ -5,12 +5,29 @@ package com.cryptopals;
  */
 public class MACs {
 
-    public static CryptoBuffer keyedMac(CryptoBuffer key, CryptoBuffer text) {
-        return new CryptoBuffer(SHA1.encode(key.clone().append(text).toString(), true));
+    interface Digester {
+        CryptoBuffer digest(CryptoBuffer message);
     }
 
-    public static boolean authKeyedMac(CryptoBuffer key, CryptoBuffer text, CryptoBuffer mac) {
-        CryptoBuffer myMac = new CryptoBuffer(SHA1.encode(key.clone().append(text).toString(), true));
+    public static CryptoBuffer keyedMac(Digester digester, CryptoBuffer key, CryptoBuffer text) {
+        return digester.digest(key.clone().append(text));
+    }
+
+    public static boolean authKeyedMac(Digester digester, CryptoBuffer key, CryptoBuffer text, CryptoBuffer mac) {
+        CryptoBuffer myMac = digester.digest(key.clone().append(text));
+        return myMac.toString().equals(mac.toString());
+    }
+
+    public static CryptoBuffer keyedSha1Mac(CryptoBuffer key, CryptoBuffer text) {
+        return keyedMac(
+                (CryptoBuffer message) -> message.sha1(),
+                key,
+                text
+        );
+    }
+
+    public static boolean authKeyedSha1Mac(CryptoBuffer key, CryptoBuffer text, CryptoBuffer mac) {
+        CryptoBuffer myMac = keyedSha1Mac(key, text);
         return myMac.toString().equals(mac.toString());
     }
 }

@@ -13,7 +13,7 @@ public class Set4Challenge28 {
         CryptoBuffer text = new CryptoBuffer("this is my message");
         CryptoBuffer mac = text.macSha1(key);
 
-        assert(MACs.authKeyedMac(key, text, mac));
-        assert(!MACs.authKeyedMac(key, text.append(new CryptoBuffer("yeah")), mac));
+        assert(MACs.authKeyedSha1Mac(key, text, mac));
+        assert(!MACs.authKeyedSha1Mac(key, text.append(new CryptoBuffer("yeah")), mac));
     }
 }

@@ -1,421 +1,627 @@
 package com.cryptopals;
 
-import java.security.NoSuchAlgorithmException;
-
-/*
- * A Java implementation of the Secure Hash Algorithm, SHA-1, as defined
- * in FIPS PUB 180-1
- * Copyright (C) Sam Ruby 2004
- * All rights reserved
- *
- * Based on code Copyright (C) Paul Johnston 2000 - 2002.
- * See http://pajhome.org.uk/site/legal.html for details.
- *
- * Converted to Java by Russell Beattie 2004
- * Base64 logic and inlining by Sam Ruby 2004
- * Bug fix correcting single bit error in base64 code by John Wilson
- *
- *                                BSD License
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer. Redistributions in binary
- * form must reproduce the above copyright notice, this list of conditions and
- * the following disclaimer in the documentation and/or other materials
- * provided with the distribution.
- *
- * Neither the name of the author nor the names of its contributors may be
- * used to endorse or promote products derived from this software without
- * specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+/**
+ * Created by candrews on 27/08/15.
  */
+public final class SHA1 {
 
-public class SHA1 {
-
-    /**
-     * Concatenate several byte arrays together
-     *
-     * @param arrays
-     * @return
-     */
-    private static byte[] concat(byte[]... arrays) {
-        // Calculate the length of the output array
-        int length = 0;
-
-        for (byte[] array : arrays) {
-            length += array.length;
-        }
-
-        // Allocate the output array
-        byte[] output = new byte[length];
-
-        // Copy all of the data into the output array
-        int lastPosition = 0;
-
-        for (byte[] array : arrays) {
-            System.arraycopy(array, 0, output, lastPosition, array.length);
-            lastPosition += array.length;
-        }
-
-        return output;
+    public static CryptoBuffer encode(CryptoBuffer message) {
+        SHA1 sha = new SHA1();
+        byte[] digest = new byte[20];
+        sha.update(message.toRawBytes());
+        sha.digest(digest);
+        return new CryptoBuffer(digest);
     }
 
-    private static byte[] generatePadding(byte[] bytes) {
-        return generatePadding(bytes.length, bytes.length);
+    public static CryptoBuffer encode(CryptoBuffer message, int[] regs, long bitLen) {
+        SHA1 sha = new SHA1();
+        byte[] digest = new byte[20];
+        sha.updateState(regs, bitLen);
+        sha.update(message.toRawBytes());
+        sha.digest(digest);
+        return new CryptoBuffer(digest);
     }
 
-    private static byte[] generatePadding(int count) {
-        return generatePadding(count, count);
+    public void updateState(int[] regs, long bitLen) {
+        H0 = regs[0];
+        H1 = regs[1];
+        H2 = regs[2];
+        H3 = regs[3];
+        H4 = regs[4];
+        currentLen = bitLen;
     }
 
-    private static byte[] generatePadding(int count, int desiredByteCount) {
-        int currentBlockLength = count % 64;
-        int paddingLength = (64 - currentBlockLength);
+    private int H0, H1, H2, H3, H4;
 
-        // We need 17 bytes for the padding
-        if ((currentBlockLength + 17) > 64) {
-            // We need to generate another block
-            paddingLength += 64;
-        }
+    private final int[] w = new int[80];
+    private int currentPos;
+    private long currentLen;
 
-        // Create an array to hold the padding data
-        byte[] padding = new byte[paddingLength];
-
-        // The first padding byte is always 0x80
-        padding[0] = (byte) 0x80;
-
-        // Fill in all of the padding with zeroes
-        for (int loop = 1; loop < (paddingLength - 8); loop++) {
-            padding[loop] = 0;
-        }
-
-        // Determine the bit count
-        int bitCount = desiredByteCount * 8;
-
-        /**
-         * Convert the bit count to a quadword (this will only work for bit
-         * counts < 2^32
-         */
-        byte[] bitCountQuadWord = convertToQuadword(bitCount);
-
-        // Copy the bit count to the end of the padding
-        padding[paddingLength - 8] = bitCountQuadWord[0];
-        padding[paddingLength - 7] = bitCountQuadWord[1];
-        padding[paddingLength - 6] = bitCountQuadWord[2];
-        padding[paddingLength - 5] = bitCountQuadWord[3];
-        padding[paddingLength - 4] = bitCountQuadWord[4];
-        padding[paddingLength - 3] = bitCountQuadWord[5];
-        padding[paddingLength - 2] = bitCountQuadWord[6];
-        padding[paddingLength - 1] = bitCountQuadWord[7];
-
-        return padding;
+    public SHA1()
+    {
+        reset();
     }
 
-    /**
-     * Convert an integer to a byte array representing its value as a quad word.
-     * Used for the final 64 bits of the padding that represents the message
-     * length.
-     *
-     * @param count
-     * @return
-     */
-    private static byte[] convertToQuadword(int count) {
-        byte[] output = new byte[8];
-
-        output[0] = (byte) ((count & 0xFF00000000000000L) >> 56);
-        output[1] = (byte) ((count & 0x00FF000000000000L) >> 48);
-        output[2] = (byte) ((count & 0x0000FF0000000000L) >> 40);
-        output[3] = (byte) ((count & 0x000000FF00000000L) >> 32);
-        output[4] = (byte) ((count & 0x00000000FF000000L) >> 24);
-        output[5] = (byte) ((count & 0x0000000000FF0000L) >> 16);
-        output[6] = (byte) ((count & 0x000000000000FF00L) >> 8);
-        output[7] = (byte) ((count & 0x00000000000000FFL));
-
-        return output;
+    public int getDigestLength()
+    {
+        return 20;
     }
 
-    /**
-     * HACK - Throws an exception if assertedValue is false
-     *
-     * @param assertedValue
-     */
-    private static void checkAssertion(boolean assertedValue) {
-        if (assertedValue != true) {
-            // Assertion failed
-            throw new AssertionError();
-        }
+    public void reset()
+    {
+        H0 = 0x67452301;
+        H1 = 0xEFCDAB89;
+        H2 = 0x98BADCFE;
+        H3 = 0x10325476;
+        H4 = 0xC3D2E1F0;
+
+        currentPos = 0;
+        currentLen = 0;
+
+                /* In case of complete paranoia, we should also wipe out the
+                 * information contained in the w[] array */
     }
 
-    /**
-     * Bitwise rotate a 32-bit number to the left
-     */
-    private static int rol(int num, int cnt) {
-        return (num << cnt) | (num >>> (32 - cnt));
+    public void update(byte b[])
+    {
+        update(b, 0, b.length);
     }
 
-    /**
-     * Converts a byte array to a short array
-     *
-     * @param bytes
-     * @return
-     */
-    public static short[] toShorts(byte[] bytes) {
-        // Allocate space for the new array
-        short[] temp = new short[bytes.length];
+    public void update(byte b[], int off, int len)
+    {
+        if (len >= 4)
+        {
+            int idx = currentPos >> 2;
 
-        /**
-         * Loop through and copy all of the byte values (can't use
-         * System.arrayCopy since they are different types)
-         */
-        for (int loop = 0; loop < bytes.length; loop++) {
-            temp[loop] = bytes[loop];
-        }
-
-        // Convert all negative values to their correct byte values
-        fixNegatives(temp);
-
-        return temp;
-    }
-
-    /**
-     * Extracts the state of a SHA-1 hash from a hex string containing 5 32-bit
-     * words
-     *
-     * @param state
-     * @return
-     */
-    private static int[] extractState(String state) {
-        // Make sure the state isn't NULL
-        checkAssertion(state != null);
-
-        // Make sure the state is the correct length (40 characters)
-        checkAssertion(state.length() == 40);
-
-        // Extract the 5 32-bit words
-        int H0 = (int) Long.parseLong(state.substring(0, 8), 16);
-        int H1 = (int) Long.parseLong(state.substring(8, 16), 16);
-        int H2 = (int) Long.parseLong(state.substring(16, 24), 16);
-        int H3 = (int) Long.parseLong(state.substring(24, 32), 16);
-        int H4 = (int) Long.parseLong(state.substring(32, 40), 16);
-
-        // Put the 5 32-bit words into an array
-        int[] stateValues = new int[5];
-        stateValues[0] = H0;
-        stateValues[1] = H1;
-        stateValues[2] = H2;
-        stateValues[3] = H3;
-        stateValues[4] = H4;
-
-        return stateValues;
-    }
-
-    /**
-     * Converts values that were converted from signed bytes to their unsigned
-     * byte equivalents in a short array
-     *
-     * @param shorts
-     */
-    private static void fixNegatives(short[] shorts) {
-        for (int loop = 0; loop < shorts.length; loop++) {
-            if (shorts[loop] < 0) {
-                short temp = shorts[loop];
-                temp = (short) (256 + temp);
-                shorts[loop] = temp;
+            switch (currentPos & 3)
+            {
+                case 0:
+                    w[idx] = (((b[off++] & 0xff) << 24) | ((b[off++] & 0xff) << 16) | ((b[off++] & 0xff) << 8) | (b[off++] & 0xff));
+                    len -= 4;
+                    currentPos += 4;
+                    currentLen += 32;
+                    if (currentPos == 64)
+                    {
+                        perform();
+                        currentPos = 0;
+                    }
+                    break;
+                case 1:
+                    w[idx] = (w[idx] << 24) | (((b[off++] & 0xff) << 16) | ((b[off++] & 0xff) << 8) | (b[off++] & 0xff));
+                    len -= 3;
+                    currentPos += 3;
+                    currentLen += 24;
+                    if (currentPos == 64)
+                    {
+                        perform();
+                        currentPos = 0;
+                    }
+                    break;
+                case 2:
+                    w[idx] = (w[idx] << 16) | (((b[off++] & 0xff) << 8) | (b[off++] & 0xff));
+                    len -= 2;
+                    currentPos += 2;
+                    currentLen += 16;
+                    if (currentPos == 64)
+                    {
+                        perform();
+                        currentPos = 0;
+                    }
+                    break;
+                case 3:
+                    w[idx] = (w[idx] << 8) | (b[off++] & 0xff);
+                    len--;
+                    currentPos++;
+                    currentLen += 8;
+                    if (currentPos == 64)
+                    {
+                        perform();
+                        currentPos = 0;
+                    }
+                    break;
             }
-        }
-    }
 
-    /**
-     * Calculates the SHA-1 hash of a string
-     *
-     * @param string
-     * @return
-     */
-    public static String encode(String string, boolean calculatePadding) {
-        return encode(string.getBytes(), calculatePadding);
-    }
+                        /* Now currentPos is a multiple of 4 - this is the place to be...*/
 
-    /**
-     * Calculates the SHA-1 hash of a byte array
-     *
-     * @param bytes
-     * @return
-     */
-    public static String encode(byte[] bytes, boolean calculatePadding) {
-        return encode(toShorts(bytes), calculatePadding);
-    }
+            while (len >= 8)
+            {
+                w[currentPos >> 2] = ((b[off++] & 0xff) << 24) | ((b[off++] & 0xff) << 16) | ((b[off++] & 0xff) << 8)
+                        | (b[off++] & 0xff);
+                currentPos += 4;
 
-    /**
-     * Take a byte array and return the hex representation of its SHA-1 using
-     * the standard state values
-     */
-    public static String encode(short[] shorts, boolean calculatePadding) {
-        // These are the default values
-        int[] stateValues = extractState("67452301EFCDAB8998BADCFE10325476C3D2E1F0");
+                if (currentPos == 64)
+                {
+                    perform();
+                    currentPos = 0;
+                }
 
-        checkAssertion(stateValues[0] == 1732584193);
-        checkAssertion(stateValues[1] == -271733879);
-        checkAssertion(stateValues[2] == -1732584194);
-        checkAssertion(stateValues[3] == 271733878);
-        checkAssertion(stateValues[4] == -1009589776);
+                w[currentPos >> 2] = ((b[off++] & 0xff) << 24) | ((b[off++] & 0xff) << 16) | ((b[off++] & 0xff) << 8)
+                        | (b[off++] & 0xff);
 
-        return encode(shorts, stateValues, calculatePadding);
-    }
+                currentPos += 4;
 
-    /**
-     * Take a short array and return the hex representation of its SHA-1 using
-     * some given state values
-     *
-     * @param shorts
-     * @param stateValues
-     * @return
-     */
-    private static String encode(short[] shorts, int[] stateValues,
-                                 boolean calculatePadding) {
-        return encode(shorts, stateValues[0], stateValues[1], stateValues[2],
-                stateValues[3], stateValues[4], calculatePadding);
-    }
+                if (currentPos == 64)
+                {
+                    perform();
+                    currentPos = 0;
+                }
 
-    /**
-     * Take a byte array and return the hex representation of its SHA-1 using
-     * some given state values
-     */
-    private static String encode(short[] shorts, int H0, int H1, int H2,
-                                 int H3, int H4, boolean calculatePadding) {
-        // Convert a string to a sequence of 16-word blocks, stored as an array.
-        // Append padding bits and the length, as described in the SHA1 standard
+                currentLen += 64;
+                len -= 8;
+            }
 
-        int[] blocks;
-
-        if (calculatePadding) {
-            // Calculate padding
-
-            // Example 1:
-            // Bytes: 0x00 x 2
-            //
-            // Step 1: 2 + 8 = 10 bytes
-            // Step 2: 10 >> 6 = 0 full blocks
-            // Step 3: 0 + 1 = 1 full block
-            // Step 4: 1 * 16 = 16 words
-            //
-            // Example 2:
-            // Bytes: 0x00 x 64
-            // Length: 64
-            //
-            // Step 1: 64 + 8 = 72 bytes
-            // Step 2: 72 >> 6 = 1 full block
-            // Step 3: 1 + 1 = 2 full blocks
-            // Step 4: 2 * 16 = 32 words
-
-            /**
-             * Step 1: Add 8 bytes to the length of the data for the initial
-             * padding byte (0x80)
-             */
-            int step1 = shorts.length + 8;
-
-            /**
-             * Step 2: Shift right by 6/divide by 64 calculate the number of
-             * full 512-bit blocks (one 64-byte block is one 512-bit block)
-             */
-            int step2 = step1 >> 6;
-
-            // Step 3: Add 1 so there is at least one full 512-bit block
-            int step3 = step2 + 1;
-
-            /**
-             * Step 4: Multiply by 16 to get back to the number of 16-byte
-             * sub-blocks
-             */
-            int numberOfBlocks = step3 * 16;
-
-            // Allocate space for the blocks
-            blocks = new int[numberOfBlocks];
-
-            // SHA-1 padding
-            // Step 1: Place the trailing 1 bit where it belongs
-            blocks[shorts.length >> 2] |= 0x80 << (24 - (shorts.length % 4) * 8);
-
-            // Step 2: End the data with the number of bits in the message
-            blocks[blocks.length - 1] = shorts.length * 8;
-        } else {
-            // No padding to calculate
-
-            // Calculate the number of blocks
-            int numberOfBlocks = shorts.length >> 2;
-
-            // Allocate space for the blocks
-            blocks = new int[numberOfBlocks];
-
-            // Do we have data that falls exactly on a 512-bit boundary?
-            if ((shorts.length % 64) != 0) {
-                // No, quit
-                throw new AssertionError("Length must be a multiple of 64 ["
-                        + shorts.length + "]");
+            while (len < 0) //(len >= 4)
+            {
+                w[currentPos >> 2] = ((b[off++] & 0xff) << 24) | ((b[off++] & 0xff) << 16) | ((b[off++] & 0xff) << 8)
+                        | (b[off++] & 0xff);
+                len -= 4;
+                currentPos += 4;
+                currentLen += 32;
+                if (currentPos == 64)
+                {
+                    perform();
+                    currentPos = 0;
+                }
             }
         }
 
-        // Set up the blocks
-        for (int loop = 0; loop < shorts.length; loop++) {
-            blocks[loop >> 2] |= shorts[loop] << (24 - (loop % 4) * 8);
-        }
+                /* Remaining bytes (1-3) */
 
-        // Calculate 160 bit SHA1 hash of the sequence of blocks
-        int[] w = new int[80];
+        while (len > 0)
+        {
+                        /* Here is room for further improvements */
+            int idx = currentPos >> 2;
+            w[idx] = (w[idx] << 8) | (b[off++] & 0xff);
 
-        for (int loop = 0; loop < blocks.length; loop += 16) {
-            int oldH0 = H0;
-            int oldH1 = H1;
-            int oldH2 = H2;
-            int oldH3 = H3;
-            int oldH4 = H4;
+            currentLen += 8;
+            currentPos++;
 
-            for (int innerLoop = 0; innerLoop < 80; innerLoop++) {
-                w[innerLoop] = (innerLoop < 16) ? blocks[loop + innerLoop]
-                        : (rol(w[innerLoop - 3] ^ w[innerLoop - 8]
-                        ^ w[innerLoop - 14] ^ w[innerLoop - 16], 1));
-
-                int t = rol(H0, 5)
-                        + H4
-                        + w[innerLoop]
-                        + ((innerLoop < 20) ? 1518500249 + ((H1 & H2) | ((~H1) & H3))
-                        : (innerLoop < 40) ? 1859775393 + (H1 ^ H2 ^ H3)
-                        : (innerLoop < 60) ? -1894007588
-                        + ((H1 & H2) | (H1 & H3) | (H2 & H3))
-                        : -899497514 + (H1 ^ H2 ^ H3));
-                H4 = H3;
-                H3 = H2;
-                H2 = rol(H1, 30);
-                H1 = H0;
-                H0 = t;
+            if (currentPos == 64)
+            {
+                perform();
+                currentPos = 0;
             }
+            len--;
+        }
+    }
 
-            H0 = H0 + oldH0;
-            H1 = H1 + oldH1;
-            H2 = H2 + oldH2;
-            H3 = H3 + oldH3;
-            H4 = H4 + oldH4;
+    public void update(byte b)
+    {
+        int idx = currentPos >> 2;
+        w[idx] = (w[idx] << 8) | (b & 0xff);
+
+        currentLen += 8;
+        currentPos++;
+
+        if (currentPos == 64)
+        {
+            perform();
+            currentPos = 0;
+        }
+    }
+
+    private void putInt(byte[] b, int pos, int val)
+    {
+        b[pos] = (byte) (val >> 24);
+        b[pos + 1] = (byte) (val >> 16);
+        b[pos + 2] = (byte) (val >> 8);
+        b[pos + 3] = (byte) val;
+    }
+
+    public void digest(byte[] out)
+    {
+        digest(out, 0);
+    }
+
+    public void digest(byte[] out, int off)
+    {
+                /* Pad with a '1' and 7-31 zero bits... */
+
+        int idx = currentPos >> 2;
+        w[idx] = ((w[idx] << 8) | (0x80)) << ((3 - (currentPos & 3)) << 3);
+
+        currentPos = (currentPos & ~3) + 4;
+
+        if (currentPos == 64)
+        {
+            currentPos = 0;
+            perform();
+        }
+        else if (currentPos == 60)
+        {
+            currentPos = 0;
+            w[15] = 0;
+            perform();
         }
 
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(String.format("%08x", H0));
-        stringBuilder.append(String.format("%08x", H1));
-        stringBuilder.append(String.format("%08x", H2));
-        stringBuilder.append(String.format("%08x", H3));
-        stringBuilder.append(String.format("%08x", H4));
+                /* Now currentPos is a multiple of 4 and we can do the remaining
+                 * padding much more efficiently, furthermore we are sure
+                 * that currentPos <= 56.
+                 */
 
-        return stringBuilder.toString();
+        for (int i = currentPos >> 2; i < 14; i++)
+            w[i] = 0;
+
+        w[14] = (int) (currentLen >> 32);
+        w[15] = (int) currentLen;
+
+        perform();
+
+        putInt(out, off, H0);
+        putInt(out, off + 4, H1);
+        putInt(out, off + 8, H2);
+        putInt(out, off + 12, H3);
+        putInt(out, off + 16, H4);
+
+        reset();
+    }
+
+    private void perform()
+    {
+        for (int t = 16; t < 80; t++)
+        {
+            int x = w[t - 3] ^ w[t - 8] ^ w[t - 14] ^ w[t - 16];
+            w[t] = ((x << 1) | (x >>> 31));
+        }
+
+        int A = H0;
+        int B = H1;
+        int C = H2;
+        int D = H3;
+        int E = H4;
+
+                /* Here we use variable substitution and loop unrolling
+                 *
+                 * === Original step:
+                 *
+                 * T = s5(A) + f(B,C,D) + E + w[0] + K;
+                 * E = D; D = C; C = s30(B); B = A; A = T;
+                 *
+                 * === Rewritten step:
+                 *
+                 * T = s5(A + f(B,C,D) + E + w[0] + K;
+                 * B = s30(B);
+                 * E = D; D = C; C = B; B = A; A = T;
+                 *
+                 * === Let's rewrite things, introducing new variables:
+                 *
+                 * E0 = E; D0 = D; C0 = C; B0 = B; A0 = A;
+                 *
+                 * T = s5(A0) + f(B0,C0,D0) + E0 + w[0] + K;
+                 * B0 = s30(B0);
+                 * E1 = D0; D1 = C0; C1 = B0; B1 = A0; A1 = T;
+                 *
+                 * T = s5(A1) + f(B1,C1,D1) + E1 + w[1] + K;
+                 * B1 = s30(B1);
+                 * E2 = D1; D2 = C1; C2 = B1; B2 = A1; A2 = T;
+                 *
+                 * E = E2; D = E2; C = C2; B = B2; A = A2;
+                 *
+                 * === No need for 'T', we can write into 'Ex' instead since
+                 * after the calculation of 'T' nobody is interested
+                 * in 'Ex' anymore.
+                 *
+                 * E0 = E; D0 = D; C0 = C; B0 = B; A0 = A;
+                 *
+                 * E0 = E0 + s5(A0) + f(B0,C0,D0) + w[0] + K;
+                 * B0 = s30(B0);
+                 * E1 = D0; D1 = C0; C1 = B0; B1 = A0; A1 = E0;
+                 *
+                 * E1 = E1 + s5(A1) + f(B1,C1,D1) + w[1] + K;
+                 * B1 = s30(B1);
+                 * E2 = D1; D2 = C1; C2 = B1; B2 = A1; A2 = E1;
+                 *
+                 * E = Ex; D = Ex; C = Cx; B = Bx; A = Ax;
+                 *
+                 * === Further optimization: get rid of the swap operations
+                 * Idea: instead of swapping the variables, swap the names of
+                 * the used variables in the next step:
+                 *
+                 * E0 = E; D0 = d; C0 = C; B0 = B; A0 = A;
+                 *
+                 * E0 = E0 + s5(A0) + f(B0,C0,D0) + w[0] + K;
+                 * B0 = s30(B0);
+                 * // E1 = D0; D1 = C0; C1 = B0; B1 = A0; A1 = E0;
+                 *
+                 * D0 = D0 + s5(E0) + f(A0,B0,C0) + w[1] + K;
+                 * A0 = s30(A0);
+                 * E2 = C0; D2 = B0; C2 = A0; B2 = E0; A2 = D0;
+                 *
+                 * E = E2; D = D2; C = C2; B = B2; A = A2;
+                 *
+                 * === OK, let's do this several times, also, directly
+                 * use A (instead of A0) and B,C,D,E.
+                 *
+                 * E = E + s5(A) + f(B,C,D) + w[0] + K;
+                 * B = s30(B);
+                 * // E1 = D; D1 = C; C1 = B; B1 = A; A1 = E;
+                 *
+                 * D = D + s5(E) + f(A,B,C) + w[1] + K;
+                 * A = s30(A);
+                 * // E2 = C; D2 = B; C2 = A; B2 = E; A2 = D;
+                 *
+                 * C = C + s5(D) + f(E,A,B) + w[2] + K;
+                 * E = s30(E);
+                 * // E3 = B; D3 = A; C3 = E; B3 = D; A3 = C;
+                 *
+                 * B = B + s5(C) + f(D,E,A) + w[3] + K;
+                 * D = s30(D);
+                 * // E4 = A; D4 = E; C4 = D; B4 = C; A4 = B;
+                 *
+                 * A = A + s5(B) + f(C,D,E) + w[4] + K;
+                 * C = s30(C);
+                 * // E5 = E; D5 = D; C5 = C; B5 = B; A5 = A;
+                 *
+                 * //E = E5; D = D5; C = C5; B = B5; A = A5;
+                 *
+                 * === Very nice, after 5 steps each variable
+                 * has the same contents as after 5 steps with
+                 * the original algorithm!
+                 *
+                 * We therefore can easily unroll each interval,
+                 * as the number of steps in each interval is a
+                 * multiple of 5 (20 steps per interval).
+                 */
+
+        E += ((A << 5) | (A >>> 27)) + ((B & C) | ((~B) & D)) + w[0] + 0x5A827999;
+        B = ((B << 30) | (B >>> 2));
+
+        D += ((E << 5) | (E >>> 27)) + ((A & B) | ((~A) & C)) + w[1] + 0x5A827999;
+        A = ((A << 30) | (A >>> 2));
+
+        C += ((D << 5) | (D >>> 27)) + ((E & A) | ((~E) & B)) + w[2] + 0x5A827999;
+        E = ((E << 30) | (E >>> 2));
+
+        B += ((C << 5) | (C >>> 27)) + ((D & E) | ((~D) & A)) + w[3] + 0x5A827999;
+        D = ((D << 30) | (D >>> 2));
+
+        A += ((B << 5) | (B >>> 27)) + ((C & D) | ((~C) & E)) + w[4] + 0x5A827999;
+        C = ((C << 30) | (C >>> 2));
+
+        E += ((A << 5) | (A >>> 27)) + ((B & C) | ((~B) & D)) + w[5] + 0x5A827999;
+        B = ((B << 30) | (B >>> 2));
+
+        D += ((E << 5) | (E >>> 27)) + ((A & B) | ((~A) & C)) + w[6] + 0x5A827999;
+        A = ((A << 30) | (A >>> 2));
+
+        C += ((D << 5) | (D >>> 27)) + ((E & A) | ((~E) & B)) + w[7] + 0x5A827999;
+        E = ((E << 30) | (E >>> 2));
+
+        B += ((C << 5) | (C >>> 27)) + ((D & E) | ((~D) & A)) + w[8] + 0x5A827999;
+        D = ((D << 30) | (D >>> 2));
+
+        A += ((B << 5) | (B >>> 27)) + ((C & D) | ((~C) & E)) + w[9] + 0x5A827999;
+        C = ((C << 30) | (C >>> 2));
+
+        E += ((A << 5) | (A >>> 27)) + ((B & C) | ((~B) & D)) + w[10] + 0x5A827999;
+        B = ((B << 30) | (B >>> 2));
+
+        D += ((E << 5) | (E >>> 27)) + ((A & B) | ((~A) & C)) + w[11] + 0x5A827999;
+        A = ((A << 30) | (A >>> 2));
+
+        C += ((D << 5) | (D >>> 27)) + ((E & A) | ((~E) & B)) + w[12] + 0x5A827999;
+        E = ((E << 30) | (E >>> 2));
+
+        B += ((C << 5) | (C >>> 27)) + ((D & E) | ((~D) & A)) + w[13] + 0x5A827999;
+        D = ((D << 30) | (D >>> 2));
+
+        A += ((B << 5) | (B >>> 27)) + ((C & D) | ((~C) & E)) + w[14] + 0x5A827999;
+        C = ((C << 30) | (C >>> 2));
+
+        E += ((A << 5) | (A >>> 27)) + ((B & C) | ((~B) & D)) + w[15] + 0x5A827999;
+        B = ((B << 30) | (B >>> 2));
+
+        D += ((E << 5) | (E >>> 27)) + ((A & B) | ((~A) & C)) + w[16] + 0x5A827999;
+        A = ((A << 30) | (A >>> 2));
+
+        C += ((D << 5) | (D >>> 27)) + ((E & A) | ((~E) & B)) + w[17] + 0x5A827999;
+        E = ((E << 30) | (E >>> 2));
+
+        B += ((C << 5) | (C >>> 27)) + ((D & E) | ((~D) & A)) + w[18] + 0x5A827999;
+        D = ((D << 30) | (D >>> 2));
+
+        A += ((B << 5) | (B >>> 27)) + ((C & D) | ((~C) & E)) + w[19] + 0x5A827999;
+        C = ((C << 30) | (C >>> 2));
+
+        E += ((A << 5) | (A >>> 27)) + (B ^ C ^ D) + w[20] + 0x6ED9EBA1;
+        B = ((B << 30) | (B >>> 2));
+
+        D += ((E << 5) | (E >>> 27)) + (A ^ B ^ C) + w[21] + 0x6ED9EBA1;
+        A = ((A << 30) | (A >>> 2));
+
+        C += ((D << 5) | (D >>> 27)) + (E ^ A ^ B) + w[22] + 0x6ED9EBA1;
+        E = ((E << 30) | (E >>> 2));
+
+        B += ((C << 5) | (C >>> 27)) + (D ^ E ^ A) + w[23] + 0x6ED9EBA1;
+        D = ((D << 30) | (D >>> 2));
+
+        A += ((B << 5) | (B >>> 27)) + (C ^ D ^ E) + w[24] + 0x6ED9EBA1;
+        C = ((C << 30) | (C >>> 2));
+
+        E += ((A << 5) | (A >>> 27)) + (B ^ C ^ D) + w[25] + 0x6ED9EBA1;
+        B = ((B << 30) | (B >>> 2));
+
+        D += ((E << 5) | (E >>> 27)) + (A ^ B ^ C) + w[26] + 0x6ED9EBA1;
+        A = ((A << 30) | (A >>> 2));
+
+        C += ((D << 5) | (D >>> 27)) + (E ^ A ^ B) + w[27] + 0x6ED9EBA1;
+        E = ((E << 30) | (E >>> 2));
+
+        B += ((C << 5) | (C >>> 27)) + (D ^ E ^ A) + w[28] + 0x6ED9EBA1;
+        D = ((D << 30) | (D >>> 2));
+
+        A += ((B << 5) | (B >>> 27)) + (C ^ D ^ E) + w[29] + 0x6ED9EBA1;
+        C = ((C << 30) | (C >>> 2));
+
+        E += ((A << 5) | (A >>> 27)) + (B ^ C ^ D) + w[30] + 0x6ED9EBA1;
+        B = ((B << 30) | (B >>> 2));
+
+        D += ((E << 5) | (E >>> 27)) + (A ^ B ^ C) + w[31] + 0x6ED9EBA1;
+        A = ((A << 30) | (A >>> 2));
+
+        C += ((D << 5) | (D >>> 27)) + (E ^ A ^ B) + w[32] + 0x6ED9EBA1;
+        E = ((E << 30) | (E >>> 2));
+
+        B += ((C << 5) | (C >>> 27)) + (D ^ E ^ A) + w[33] + 0x6ED9EBA1;
+        D = ((D << 30) | (D >>> 2));
+
+        A += ((B << 5) | (B >>> 27)) + (C ^ D ^ E) + w[34] + 0x6ED9EBA1;
+        C = ((C << 30) | (C >>> 2));
+
+        E += ((A << 5) | (A >>> 27)) + (B ^ C ^ D) + w[35] + 0x6ED9EBA1;
+        B = ((B << 30) | (B >>> 2));
+
+        D += ((E << 5) | (E >>> 27)) + (A ^ B ^ C) + w[36] + 0x6ED9EBA1;
+        A = ((A << 30) | (A >>> 2));
+
+        C += ((D << 5) | (D >>> 27)) + (E ^ A ^ B) + w[37] + 0x6ED9EBA1;
+        E = ((E << 30) | (E >>> 2));
+
+        B += ((C << 5) | (C >>> 27)) + (D ^ E ^ A) + w[38] + 0x6ED9EBA1;
+        D = ((D << 30) | (D >>> 2));
+
+        A += ((B << 5) | (B >>> 27)) + (C ^ D ^ E) + w[39] + 0x6ED9EBA1;
+        C = ((C << 30) | (C >>> 2));
+
+        E += ((A << 5) | (A >>> 27)) + ((B & C) | (B & D) | (C & D)) + w[40] + 0x8F1BBCDC;
+        B = ((B << 30) | (B >>> 2));
+
+        D += ((E << 5) | (E >>> 27)) + ((A & B) | (A & C) | (B & C)) + w[41] + 0x8F1BBCDC;
+        A = ((A << 30) | (A >>> 2));
+
+        C += ((D << 5) | (D >>> 27)) + ((E & A) | (E & B) | (A & B)) + w[42] + 0x8F1BBCDC;
+        E = ((E << 30) | (E >>> 2));
+
+        B += ((C << 5) | (C >>> 27)) + ((D & E) | (D & A) | (E & A)) + w[43] + 0x8F1BBCDC;
+        D = ((D << 30) | (D >>> 2));
+
+        A += ((B << 5) | (B >>> 27)) + ((C & D) | (C & E) | (D & E)) + w[44] + 0x8F1BBCDC;
+        C = ((C << 30) | (C >>> 2));
+
+        E += ((A << 5) | (A >>> 27)) + ((B & C) | (B & D) | (C & D)) + w[45] + 0x8F1BBCDC;
+        B = ((B << 30) | (B >>> 2));
+
+        D += ((E << 5) | (E >>> 27)) + ((A & B) | (A & C) | (B & C)) + w[46] + 0x8F1BBCDC;
+        A = ((A << 30) | (A >>> 2));
+
+        C += ((D << 5) | (D >>> 27)) + ((E & A) | (E & B) | (A & B)) + w[47] + 0x8F1BBCDC;
+        E = ((E << 30) | (E >>> 2));
+
+        B += ((C << 5) | (C >>> 27)) + ((D & E) | (D & A) | (E & A)) + w[48] + 0x8F1BBCDC;
+        D = ((D << 30) | (D >>> 2));
+
+        A += ((B << 5) | (B >>> 27)) + ((C & D) | (C & E) | (D & E)) + w[49] + 0x8F1BBCDC;
+        C = ((C << 30) | (C >>> 2));
+
+        E += ((A << 5) | (A >>> 27)) + ((B & C) | (B & D) | (C & D)) + w[50] + 0x8F1BBCDC;
+        B = ((B << 30) | (B >>> 2));
+
+        D += ((E << 5) | (E >>> 27)) + ((A & B) | (A & C) | (B & C)) + w[51] + 0x8F1BBCDC;
+        A = ((A << 30) | (A >>> 2));
+
+        C += ((D << 5) | (D >>> 27)) + ((E & A) | (E & B) | (A & B)) + w[52] + 0x8F1BBCDC;
+        E = ((E << 30) | (E >>> 2));
+
+        B += ((C << 5) | (C >>> 27)) + ((D & E) | (D & A) | (E & A)) + w[53] + 0x8F1BBCDC;
+        D = ((D << 30) | (D >>> 2));
+
+        A += ((B << 5) | (B >>> 27)) + ((C & D) | (C & E) | (D & E)) + w[54] + 0x8F1BBCDC;
+        C = ((C << 30) | (C >>> 2));
+
+        E = E + ((A << 5) | (A >>> 27)) + ((B & C) | (B & D) | (C & D)) + w[55] + 0x8F1BBCDC;
+        B = ((B << 30) | (B >>> 2));
+
+        D += ((E << 5) | (E >>> 27)) + ((A & B) | (A & C) | (B & C)) + w[56] + 0x8F1BBCDC;
+        A = ((A << 30) | (A >>> 2));
+
+        C += ((D << 5) | (D >>> 27)) + ((E & A) | (E & B) | (A & B)) + w[57] + 0x8F1BBCDC;
+        E = ((E << 30) | (E >>> 2));
+
+        B += ((C << 5) | (C >>> 27)) + ((D & E) | (D & A) | (E & A)) + w[58] + 0x8F1BBCDC;
+        D = ((D << 30) | (D >>> 2));
+
+        A += ((B << 5) | (B >>> 27)) + ((C & D) | (C & E) | (D & E)) + w[59] + 0x8F1BBCDC;
+        C = ((C << 30) | (C >>> 2));
+
+        E += ((A << 5) | (A >>> 27)) + (B ^ C ^ D) + w[60] + 0xCA62C1D6;
+        B = ((B << 30) | (B >>> 2));
+
+        D += ((E << 5) | (E >>> 27)) + (A ^ B ^ C) + w[61] + 0xCA62C1D6;
+        A = ((A << 30) | (A >>> 2));
+
+        C += ((D << 5) | (D >>> 27)) + (E ^ A ^ B) + w[62] + 0xCA62C1D6;
+        E = ((E << 30) | (E >>> 2));
+
+        B += ((C << 5) | (C >>> 27)) + (D ^ E ^ A) + w[63] + 0xCA62C1D6;
+        D = ((D << 30) | (D >>> 2));
+
+        A += ((B << 5) | (B >>> 27)) + (C ^ D ^ E) + w[64] + 0xCA62C1D6;
+        C = ((C << 30) | (C >>> 2));
+
+        E += ((A << 5) | (A >>> 27)) + (B ^ C ^ D) + w[65] + 0xCA62C1D6;
+        B = ((B << 30) | (B >>> 2));
+
+        D += ((E << 5) | (E >>> 27)) + (A ^ B ^ C) + w[66] + 0xCA62C1D6;
+        A = ((A << 30) | (A >>> 2));
+
+        C += ((D << 5) | (D >>> 27)) + (E ^ A ^ B) + w[67] + 0xCA62C1D6;
+        E = ((E << 30) | (E >>> 2));
+
+        B += ((C << 5) | (C >>> 27)) + (D ^ E ^ A) + w[68] + 0xCA62C1D6;
+        D = ((D << 30) | (D >>> 2));
+
+        A += ((B << 5) | (B >>> 27)) + (C ^ D ^ E) + w[69] + 0xCA62C1D6;
+        C = ((C << 30) | (C >>> 2));
+
+        E += ((A << 5) | (A >>> 27)) + (B ^ C ^ D) + w[70] + 0xCA62C1D6;
+        B = ((B << 30) | (B >>> 2));
+
+        D += ((E << 5) | (E >>> 27)) + (A ^ B ^ C) + w[71] + 0xCA62C1D6;
+        A = ((A << 30) | (A >>> 2));
+
+        C += ((D << 5) | (D >>> 27)) + (E ^ A ^ B) + w[72] + 0xCA62C1D6;
+        E = ((E << 30) | (E >>> 2));
+
+        B += ((C << 5) | (C >>> 27)) + (D ^ E ^ A) + w[73] + 0xCA62C1D6;
+        D = ((D << 30) | (D >>> 2));
+
+        A += ((B << 5) | (B >>> 27)) + (C ^ D ^ E) + w[74] + 0xCA62C1D6;
+        C = ((C << 30) | (C >>> 2));
+
+        E += ((A << 5) | (A >>> 27)) + (B ^ C ^ D) + w[75] + 0xCA62C1D6;
+        B = ((B << 30) | (B >>> 2));
+
+        D += ((E << 5) | (E >>> 27)) + (A ^ B ^ C) + w[76] + 0xCA62C1D6;
+        A = ((A << 30) | (A >>> 2));
+
+        C += ((D << 5) | (D >>> 27)) + (E ^ A ^ B) + w[77] + 0xCA62C1D6;
+        E = ((E << 30) | (E >>> 2));
+
+        B += ((C << 5) | (C >>> 27)) + (D ^ E ^ A) + w[78] + 0xCA62C1D6;
+        D = ((D << 30) | (D >>> 2));
+
+        A += ((B << 5) | (B >>> 27)) + (C ^ D ^ E) + w[79] + 0xCA62C1D6;
+        C = ((C << 30) | (C >>> 2));
+
+        H0 += A;
+        H1 += B;
+        H2 += C;
+        H3 += D;
+        H4 += E;
+
+        // debug(80, H0, H1, H2, H3, H4);
+    }
+
+    private static String toHexString(byte[] b)
+    {
+        final String hexChar = "0123456789ABCDEF";
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < b.length; i++)
+        {
+            sb.append(hexChar.charAt((b[i] >> 4) & 0x0f));
+            sb.append(hexChar.charAt(b[i] & 0x0f));
+        }
+        return sb.toString();
     }
 }
