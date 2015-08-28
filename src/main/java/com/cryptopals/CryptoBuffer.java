@@ -221,4 +221,12 @@ public class CryptoBuffer {
     public CryptoBuffer macSha1(CryptoBuffer key) {
         return MACs.keyedSha1Mac(key, this);
     }
+
+    public CryptoBuffer md4() {
+        return MD4.encode(this);
+    }
+
+    public CryptoBuffer macMd4(CryptoBuffer key) {
+        return MACs.keyedMd4Mac(key, this);
+    }
 }

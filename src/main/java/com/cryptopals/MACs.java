@@ -30,4 +30,17 @@ public class MACs {
         CryptoBuffer myMac = keyedSha1Mac(key, text);
         return myMac.toString().equals(mac.toString());
     }
+
+    public static CryptoBuffer keyedMd4Mac(CryptoBuffer key, CryptoBuffer text) {
+        return keyedMac(
+                (CryptoBuffer message) -> message.md4(),
+                key,
+                text
+        );
+    }
+
+    public static boolean authKeyedMd4Mac(CryptoBuffer key, CryptoBuffer text, CryptoBuffer mac) {
+        CryptoBuffer myMac = keyedMd4Mac(key, text);
+        return myMac.toString().equals(mac.toString());
+    }
 }

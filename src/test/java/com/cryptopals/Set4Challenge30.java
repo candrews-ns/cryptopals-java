@@ -1,23 +1,23 @@
 package com.cryptopals;
 
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Random;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Created by candrews on 27/08/15.
  */
-public class Set4Challenge29 {
+public class Set4Challenge30 {
 
     @Test
-    public void testSha1() {
+    public void testMD4() {
         CryptoBuffer message = new CryptoBuffer("Chunky Bacon");
-        CryptoBuffer sha1 = SHA1.encode(message);
-        assertEquals("51adbd48c02df2fe86a8563bd81d9f019e755286", sha1.toHex());
+        CryptoBuffer md4 = MD4.encode(message);
+        assertEquals("f8ef7758e8f4b430fad4798a39c6b005", md4.toHex());
     }
 
     @Test
@@ -28,16 +28,16 @@ public class Set4Challenge29 {
         CryptoBuffer message = new CryptoBuffer("comment1=cooking%20MCs;userdata=foo;comment2=%20like%20a%20pound%20of%20bacon");
         CryptoBuffer admin = new CryptoBuffer(";admin=true");
 
-        CryptoBuffer mac = message.macSha1(key);
+        CryptoBuffer mac = message.macMd4(key);
         int[] regs = extractRegisters(mac);
 
         int foundKeyLen = 0;
         for (int keyLen = 5; keyLen <= 10; keyLen++) {
             CryptoBuffer glue = mdPadding(new CryptoBuffer(Utils.stringOfLength('A', keyLen)).append(message));
-            long bitLen = (keyLen + message.length() + glue.length()) * 8;
+            long byteLen = (keyLen + message.length() + glue.length());
 
-            CryptoBuffer forged = SHA1.encode(admin, regs, bitLen);
-            CryptoBuffer verified = message.clone().append(glue).append(admin).macSha1(key);
+            CryptoBuffer forged = MD4.encode(admin, regs, byteLen);
+            CryptoBuffer verified = message.clone().append(glue).append(admin).macMd4(key);
 
             System.out.println("keylen: " + keyLen + " forged: " + forged.toHex() + " verified: " + verified.toHex());
 
@@ -63,18 +63,22 @@ public class Set4Challenge29 {
             len = 0;
         }
 
-        padding.append(new CryptoBuffer((byte)((padding.length() > 0) ? 0 : 0x80)));
+        padding.append(new CryptoBuffer((byte) ((padding.length() > 0) ? 0 : 0x80)));
         padding.append(new CryptoBuffer(Utils.stringOfLength('\0', (55 - len))));
-        padding.append(new CryptoBuffer(ByteBuffer.allocate(Long.SIZE / 8).putLong(bitLen).array()));
+        ByteBuffer buf = ByteBuffer.allocate(Integer.BYTES);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        padding.append(new CryptoBuffer(buf.putInt(0, (int) (bitLen & 0xffffffff)).array()));
+        padding.append(new CryptoBuffer(buf.putInt(0, (int) (bitLen >>> 32)).array()));
 
         return padding;
     }
 
     private int[] extractRegisters(CryptoBuffer hash) {
-        int[] regs = new int[5];
+        int[] regs = new int[4];
         ArrayList<CryptoBuffer> ints = hash.chunked(4);
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 4; i++) {
             ByteBuffer buf = ByteBuffer.allocate(Integer.BYTES);
+            buf.order(ByteOrder.LITTLE_ENDIAN);
             regs[i] = buf.put(ints.get(i).toRawBytes()).getInt(0);
         }
         return regs;
