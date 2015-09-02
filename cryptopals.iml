@@ -12,6 +12,8 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="junit:junit:4.12" level="project" />
+    <orderEntry type="library" name="org.eclipse.jetty:jetty-server:9.3.0.RC0" level="project" />
     <orderEntry type="library" name="commons-codec:commons-codec:1.10" level="project" />
+    <orderEntry type="library" name="org.apache.httpcomponents:fluent-hc:4.4.1" level="project" />
   </component>
 </module>

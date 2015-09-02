@@ -66,6 +66,14 @@ public class Utils {
         return s.toString();
     }
 
+    public static CryptoBuffer bufferOfLength(byte b, int len) {
+        byte[] bytes = new byte[len];
+        for (int i = 0; i < len; i++) {
+            bytes[i] = b;
+        }
+        return new CryptoBuffer(bytes);
+    }
+
     public static CryptoBuffer aesEcbEncryptWithKey(CryptoBuffer key, CryptoBuffer plaintext) {
         Cipher aes = Ciphers.aesCipher();
         SecretKey skey = key.asSecretKey("AES");

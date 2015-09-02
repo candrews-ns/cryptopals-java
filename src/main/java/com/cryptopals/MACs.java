@@ -43,4 +43,20 @@ public class MACs {
         CryptoBuffer myMac = keyedMd4Mac(key, text);
         return myMac.toString().equals(mac.toString());
     }
+
+    public static CryptoBuffer hmacSha1(CryptoBuffer key, CryptoBuffer message) {
+        int blocksize = 64;
+
+        if (key.length() > blocksize) {
+            key = SHA1.encode(key); // keys longer than blocksize are shortened
+        }
+        if (key.length() < blocksize) {
+            key.append(new CryptoBuffer(Utils.stringOfLength('\0', blocksize - key.length())));
+        }
+
+        CryptoBuffer o_key_pad = new CryptoBuffer(Utils.stringOfLength((char) 0x5C, blocksize)).xorWith(key);
+        CryptoBuffer i_key_pad = new CryptoBuffer(Utils.stringOfLength((char) 0x36, blocksize)).xorWith(key);
+
+        return SHA1.encode(o_key_pad.append(SHA1.encode((i_key_pad.append(message)))));
+    }
 }
