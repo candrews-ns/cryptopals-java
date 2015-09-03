@@ -27,4 +27,23 @@ public class Set5Challenge33 {
         BigInteger s2 = DH.deriveSessionKey(params.p, b, A);
         assertEquals(s1, s2);
     }
+
+    @Test
+    public void testDHFixated() {
+        Random r = new Random();
+        DH.Params params = new DH.Params();
+
+        BigInteger a = DH.generatePrivateKey(512, r);
+        BigInteger A = DH.derivePublicKey(params.p, params.g, a);
+
+        BigInteger b = DH.generatePrivateKey(512, r);
+        BigInteger B = DH.derivePublicKey(params.p, params.g, b);
+
+        // fixation by injection of p in place of public key
+        BigInteger s1 = DH.deriveSessionKey(params.p, a, params.p);
+        BigInteger s2 = DH.deriveSessionKey(params.p, b, params.p);
+
+        assertEquals(BigInteger.ZERO, s1);
+        assertEquals(BigInteger.ZERO, s2);
+    }
 }
