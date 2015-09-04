@@ -5,6 +5,8 @@ import org.apache.commons.codec.DecoderException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -234,6 +236,18 @@ public class CryptoBuffer {
 
     public CryptoBuffer macMd4(CryptoBuffer key) {
         return MACs.keyedMd4Mac(key, this);
+    }
+
+    public CryptoBuffer sha256() {
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("SHA-256");
+        }
+        catch (NoSuchAlgorithmException ignored) { }
+        if (md == null) {
+            return new CryptoBuffer("");
+        }
+        return new CryptoBuffer(md.digest(this.buf));
     }
 
     public boolean equals(Object obj) {

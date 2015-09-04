@@ -44,11 +44,11 @@ public class MACs {
         return myMac.equals(mac);
     }
 
-    public static CryptoBuffer hmacSha1(CryptoBuffer key, CryptoBuffer message) {
+    public static CryptoBuffer hmac(Digester d, CryptoBuffer key, CryptoBuffer message) {
         int blocksize = 64;
 
         if (key.length() > blocksize) {
-            key = SHA1.encode(key); // keys longer than blocksize are shortened
+            key = d.digest(key); // keys longer than blocksize are shortened
         }
         if (key.length() < blocksize) {
             key.append(new CryptoBuffer(Utils.stringOfLength('\0', blocksize - key.length())));
@@ -57,6 +57,22 @@ public class MACs {
         CryptoBuffer o_key_pad = new CryptoBuffer(Utils.stringOfLength((char) 0x5C, blocksize)).xorWith(key);
         CryptoBuffer i_key_pad = new CryptoBuffer(Utils.stringOfLength((char) 0x36, blocksize)).xorWith(key);
 
-        return SHA1.encode(o_key_pad.append(SHA1.encode((i_key_pad.append(message)))));
+        return d.digest(o_key_pad.append(d.digest((i_key_pad.append(message)))));
+    }
+
+    public static CryptoBuffer hmacSha1(CryptoBuffer key, CryptoBuffer message) {
+        return hmac(
+                (CryptoBuffer text) -> text.sha1(),
+                key,
+                message
+        );
+    }
+
+    public static CryptoBuffer hmacSha256(CryptoBuffer key, CryptoBuffer message) {
+        return hmac(
+                (CryptoBuffer text) -> text.sha256(),
+                key,
+                message
+        );
     }
 }
