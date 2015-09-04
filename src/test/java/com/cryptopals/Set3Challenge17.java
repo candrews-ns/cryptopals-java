@@ -3,7 +3,7 @@ package com.cryptopals;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
-import com.cryptopals.com.cryptopals.attacks.cbc.PaddingOracle;
+import com.cryptopals.attacks.cbc.PaddingOracle;
 
 import javax.crypto.BadPaddingException;
 import java.util.ArrayList;

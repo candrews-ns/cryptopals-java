@@ -1,6 +1,6 @@
 package com.cryptopals;
 
-import com.cryptopals.com.cryptopals.attacks.ecb.Decrypt;
+import com.cryptopals.attacks.ecb.Decrypt;
 import org.junit.Test;
 
 import java.util.Random;

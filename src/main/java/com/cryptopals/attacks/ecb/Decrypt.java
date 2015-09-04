@@ -1,4 +1,4 @@
-package com.cryptopals.com.cryptopals.attacks.ecb;
+package com.cryptopals.attacks.ecb;
 
 import com.cryptopals.CryptoBuffer;
 import com.cryptopals.Utils;
