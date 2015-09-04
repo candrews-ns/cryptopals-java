@@ -30,7 +30,7 @@ public class Set2Challenge10 {
         aes.init(Cipher.DECRYPT_MODE, skey);
 
         CryptoBuffer plaintext2 = Modes.cbcDecrypt(aes, iv, ciphertext);
-        assertEquals(plaintext.toString(), plaintext2.toString());
+        assertEquals(plaintext, plaintext2);
     }
 
     @Test

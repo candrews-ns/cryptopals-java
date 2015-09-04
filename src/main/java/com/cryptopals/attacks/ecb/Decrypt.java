@@ -127,8 +127,8 @@ public class Decrypt {
             CryptoBuffer ciphertext = o.test(trial);
 
             ArrayList<CryptoBuffer> chunks = ciphertext.chunked(blocksize);
-            if ( chunks.get(1).toString().equals(chunks.get(2).toString()) &&
-                    chunks.get(3).toString().equals(chunks.get(4).toString()) ) {
+            if ( chunks.get(1).equals(chunks.get(2)) &&
+                    chunks.get(3).equals(chunks.get(4)) ) {
                 return ciphertext.substr((blocksize * 5), 256);
             }
         }

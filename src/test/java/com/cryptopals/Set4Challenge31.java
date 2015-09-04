@@ -129,7 +129,7 @@ public class Set4Challenge31 {
                 return false;
             }
             for (int i = 0; i < a.length(); i++) {
-                if (!a.substr(i, 1).toString().equals(b.substr(i, 1).toString())) {
+                if (!a.substr(i, 1).equals(b.substr(i, 1))) {
                     return false;
                 }
                 try {

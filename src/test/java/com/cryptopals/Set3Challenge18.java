@@ -41,6 +41,6 @@ public class Set3Challenge18 {
         CryptoBuffer ciphertext = Modes.ctr(aes, nonce, plaintext);
         CryptoBuffer plaintext2 = Modes.ctr(aes, nonce, ciphertext);
 
-        assertEquals(plaintext.toString(), plaintext2.toString());
+        assertEquals(plaintext, plaintext2);
     }
 }

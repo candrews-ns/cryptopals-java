@@ -41,7 +41,7 @@ public class Set4Challenge29 {
 
             System.out.println("keylen: " + keyLen + " forged: " + forged.toHex() + " verified: " + verified.toHex());
 
-            if (forged.toString().equals(verified.toString())) {
+            if (forged.equals(verified)) {
                 foundKeyLen = keyLen;
                 break;
             }

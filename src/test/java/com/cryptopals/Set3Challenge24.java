@@ -26,8 +26,8 @@ public class Set3Challenge24 {
         prng.seed(1);
         CryptoBuffer plaintext2 = Modes.prngStream(prng, ciphertext);
 
-        assertNotEquals(plaintext.toString(), ciphertext.toString());
-        assertEquals(plaintext.toString(), plaintext2.toString());
+        assertNotEquals(plaintext, ciphertext);
+        assertEquals(plaintext, plaintext2);
     }
 
     @Test

@@ -27,7 +27,7 @@ public class Set4Challenge27 {
 
         CryptoBuffer ciphertext = encrypt(plaintext);
         CryptoBuffer plaintextcheck = decrypt(ciphertext).pkcs7unPad(16);
-        assertEquals(plaintext.toString(), plaintextcheck.toString());
+        assertEquals(plaintext, plaintextcheck);
 
         ArrayList<CryptoBuffer> chunks = ciphertext.chunked(16);
         CryptoBuffer c1 = chunks.get(0);
@@ -57,7 +57,7 @@ public class Set4Challenge27 {
             CryptoBuffer p3 = chunks.get(2);
 
             CryptoBuffer key = p1.xorWith(p3);
-            assertEquals(key_and_iv.toString(), key.toString());
+            assertEquals(key_and_iv, key);
         }
         else {
             fail("didn't recover key");

@@ -24,7 +24,7 @@ public class Set5Challenge35 {
         A.sendMessage(B, MESSAGE);
         B.sendMessageReply(A);
 
-        assertEquals(MESSAGE.toString(), A.getServerReply().toString());
+        assertEquals(MESSAGE, A.getServerReply());
     }
 
     @Test
@@ -47,10 +47,10 @@ public class Set5Challenge35 {
         M.sendMessageReply(A);
 
         // are A and B still communicating?
-        assertEquals(MESSAGE.toString(), A.getServerReply().toString());
+        assertEquals(MESSAGE, A.getServerReply());
 
         // did M decrypt the message?
-        assertEquals(MESSAGE.toString(), M.getMessage(BigInteger.ONE).toString());
+        assertEquals(MESSAGE, M.getMessage(BigInteger.ONE));
     }
 
     @Test
@@ -73,10 +73,10 @@ public class Set5Challenge35 {
         M.sendMessageReply(A);
 
         // are A and B still communicating?
-        assertEquals(MESSAGE.toString(), A.getServerReply().toString());
+        assertEquals(MESSAGE, A.getServerReply());
 
         // did M decrypt the message?
-        assertEquals(MESSAGE.toString(), M.getMessage(BigInteger.ZERO).toString());
+        assertEquals(MESSAGE, M.getMessage(BigInteger.ZERO));
     }
 
     @Test
@@ -101,7 +101,7 @@ public class Set5Challenge35 {
         M.sendMessageReply(A);
 
         // are A and B still communicating?
-        assertEquals(MESSAGE.toString(), A.getServerReply().toString());
+        assertEquals(MESSAGE, A.getServerReply());
 
         // did M decrypt the message?
         BigInteger fixedSessionKey;
@@ -111,7 +111,7 @@ public class Set5Challenge35 {
         else {
             fixedSessionKey = gMinusOne;
         }
-        assertEquals(MESSAGE.toString(), M.getMessage(fixedSessionKey).toString());
+        assertEquals(MESSAGE, M.getMessage(fixedSessionKey));
     }
 
     public interface Actor {

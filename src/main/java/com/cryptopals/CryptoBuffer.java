@@ -235,4 +235,13 @@ public class CryptoBuffer {
     public CryptoBuffer macMd4(CryptoBuffer key) {
         return MACs.keyedMd4Mac(key, this);
     }
+
+    public boolean equals(Object obj) {
+        if (!(obj instanceof CryptoBuffer)) {
+            return false;
+        }
+        CryptoBuffer other = (CryptoBuffer)obj;
+
+        return this.toString().equals(other.toString());
+    }
 }

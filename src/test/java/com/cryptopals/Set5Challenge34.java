@@ -22,7 +22,7 @@ public class Set5Challenge34 {
         A.sendMessage(B, MESSAGE);
         B.sendMessageReply(A);
 
-        assertEquals(MESSAGE.toString(), A.getServerReply().toString());
+        assertEquals(MESSAGE, A.getServerReply());
     }
 
     @Test
@@ -41,10 +41,10 @@ public class Set5Challenge34 {
         M.sendMessageReply(A);
 
         // are A and B still communicating?
-        assertEquals(MESSAGE.toString(), A.getServerReply().toString());
+        assertEquals(MESSAGE, A.getServerReply());
 
         // did M decrypt the message?
-        assertEquals(MESSAGE.toString(), M.getMessage().toString());
+        assertEquals(MESSAGE, M.getMessage());
     }
 
     public interface Actor {

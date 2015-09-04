@@ -15,7 +15,7 @@ public class MACs {
 
     public static boolean authKeyedMac(Digester digester, CryptoBuffer key, CryptoBuffer text, CryptoBuffer mac) {
         CryptoBuffer myMac = digester.digest(key.clone().append(text));
-        return myMac.toString().equals(mac.toString());
+        return myMac.equals(mac);
     }
 
     public static CryptoBuffer keyedSha1Mac(CryptoBuffer key, CryptoBuffer text) {
@@ -28,7 +28,7 @@ public class MACs {
 
     public static boolean authKeyedSha1Mac(CryptoBuffer key, CryptoBuffer text, CryptoBuffer mac) {
         CryptoBuffer myMac = keyedSha1Mac(key, text);
-        return myMac.toString().equals(mac.toString());
+        return myMac.equals(mac);
     }
 
     public static CryptoBuffer keyedMd4Mac(CryptoBuffer key, CryptoBuffer text) {
@@ -41,7 +41,7 @@ public class MACs {
 
     public static boolean authKeyedMd4Mac(CryptoBuffer key, CryptoBuffer text, CryptoBuffer mac) {
         CryptoBuffer myMac = keyedMd4Mac(key, text);
-        return myMac.toString().equals(mac.toString());
+        return myMac.equals(mac);
     }
 
     public static CryptoBuffer hmacSha1(CryptoBuffer key, CryptoBuffer message) {
