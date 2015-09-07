@@ -8,6 +8,7 @@ public class SRP {
     private final BigInteger N;
     private final BigInteger g;
     private final BigInteger k;
+
     private CryptoBuffer I;
     private CryptoBuffer P;
 
@@ -80,5 +81,33 @@ public class SRP {
 
     public BigInteger getSalt() {
         return salt;
+    }
+
+    protected BigInteger getV() {
+        return v;
+    }
+
+    protected BigInteger getG() {
+        return g;
+    }
+
+    public BigInteger getPublicKey() {
+        return publicKey;
+    }
+
+    protected BigInteger getPrivateKey() {
+        return privateKey;
+    }
+
+    protected CryptoBuffer getP() {
+        return P;
+    }
+
+    protected BigInteger getN() {
+        return N;
+    }
+
+    protected Random getR() {
+        return r;
     }
 }
