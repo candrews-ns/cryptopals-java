@@ -10,7 +10,7 @@ public class Set5Challenge39 {
 
     @Test
     public void testRawRSA() {
-        RSA.KeyPair k = RSA.generateKeyPair(3);
+        RSA.KeyPair k = RSA.generateKeyPair(1024, 3);
 
         BigInteger m = new BigInteger("42");
         BigInteger c = m.modPow(k.getE(), k.getN());
@@ -20,7 +20,7 @@ public class Set5Challenge39 {
 
     @Test
     public void testRSAWithString() {
-        RSA.KeyPair k = RSA.generateKeyPair(3);
+        RSA.KeyPair k = RSA.generateKeyPair(1024, 3);
 
         CryptoBuffer m = new CryptoBuffer("this is my message");
         CryptoBuffer c = RSA.encrypt(k, m);

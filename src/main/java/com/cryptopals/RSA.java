@@ -5,8 +5,8 @@ import java.util.Random;
 
 public class RSA {
 
-    public static KeyPair generateKeyPair(long e) {
-        return KeyPair.generate(e);
+    public static KeyPair generateKeyPair(int bits, int e) {
+        return KeyPair.generate(bits, e);
     }
 
     public static CryptoBuffer encrypt(KeyPair k, CryptoBuffer plaintext) {
@@ -24,17 +24,17 @@ public class RSA {
         private final BigInteger e;
         private final BigInteger d;
 
-        public static KeyPair generate(long long_e) {
+        public static KeyPair generate(int bits, int int_e) {
             Random r = new Random();
             BigInteger n = null, d = null;
-            BigInteger e = BigInteger.valueOf(long_e);
+            BigInteger e = BigInteger.valueOf(int_e);
 
             boolean tryAgain = true;
             while (tryAgain) {
                 tryAgain = false;
                 try {
-                    BigInteger p = BigInteger.probablePrime(1024, r);
-                    BigInteger q = BigInteger.probablePrime(1024, r);
+                    BigInteger p = BigInteger.probablePrime(bits, r);
+                    BigInteger q = BigInteger.probablePrime(bits, r);
                     n = p.multiply(q);
                     BigInteger p1 = p.subtract(BigInteger.ONE);
                     BigInteger q1 = q.subtract(BigInteger.ONE);
