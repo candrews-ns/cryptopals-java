@@ -258,4 +258,8 @@ public class CryptoBuffer {
 
         return this.toString().equals(other.toString());
     }
+
+    public int hashCode() {
+        return Arrays.hashCode(buf);
+    }
 }
