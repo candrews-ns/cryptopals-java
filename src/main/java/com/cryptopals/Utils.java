@@ -7,6 +7,7 @@ import javax.crypto.SecretKey;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.util.*;
 
@@ -143,5 +144,29 @@ public class Utils {
         }
 
         return c;
+    }
+
+    private static final BigInteger THREE = BigInteger.valueOf(3);
+
+    public static BigInteger cubeRoot(BigInteger n) {
+        // Using Newton's method, we approximate the cube root
+        // of n by the sequence:
+        // x_{i + 1} = \frac{1}{3} \left( \frac{n}{x_i^2} + 2 x_i \right).
+        // See http://en.wikipedia.org/wiki/Cube_root#Numerical_methods.
+        //
+        // Implementation based on Section 1.7.1 of
+        // "A Course in Computational Algebraic Number Theory"
+        // by Henri Cohen.
+        BigInteger x = BigInteger.ZERO.setBit(n.bitLength() / 3 + 1);
+        while (true) {
+            BigInteger y = x.shiftLeft(1).add(n.divide(x.multiply(x))).divide(THREE);
+            if (y.compareTo(x) >= 0) {
+                break;
+            }
+
+            x = y;
+        }
+
+        return x;
     }
 }
